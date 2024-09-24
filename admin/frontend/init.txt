@@ -1,0 +1,15 @@
+check node version
+    node -v
+    > v20.11.1
+
+check npm version
+    npm -v
+    > 10.2.4
+
+bootstrap a react project using vite
+    npm create vite@latest frontend -- --template react-ts
+    > create-vite@5.5.2
+
+install dependencies
+    npm install
+    > found 0 vulnerabilities
