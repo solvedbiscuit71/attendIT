@@ -1,70 +1,43 @@
-// import { useState } from 'react'
-// import reactLogo from './assets/react.svg'
-// import viteLogo from '/vite.svg'
-import React, { useRef } from 'react';
-import './App.css'
-
-const url = 'http://127.0.0.1:8000/login'
+import { useState } from "react";
+import Login from "./components/Login";
+import "./App.css"
+import Rooms from "./components/Rooms";
 
 function App() {
-  const formRef = useRef<HTMLFormElement>(null);
-
-  const handleLogin = async (event: React.FormEvent) => {
-    event.preventDefault();
-    
-    if (formRef.current) {
-      const formData = {
-        username: formRef.current.elements.namedItem('username') as HTMLInputElement,
-        password: formRef.current.elements.namedItem('password') as HTMLInputElement,
-      }
-      
-      const body = {
-        username: formData.username.value,
-        password: formData.password.value
-      }
-      formRef.current.reset()
-      
-      try {
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(body)
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          // TODO: document.cookie = `token=${result.access_token}; Secure; HttpOnly`;
-          document.cookie = `token=${result.access_token}; HttpOnly`;
-          console.log("Login Successfully", result.access_token)
-        } else {
-          const error = await response.json();
-          console.error("Error:", error)
-        }
-
-      } catch (error) {
-        console.error("Network error:", error)
-      }
-      
-    }
+  const [app, changeApp] = useState('/login');
+  
+  const onLogin = () => {
+    changeApp('/home');
   }
-
-  return (
-      <main>
-        <div className="login-card">
-          <h2>Login</h2>
-          <form onSubmit={handleLogin} ref={formRef}>
-            <label htmlFor="username">Username</label>
-            <input type="text" id="username" name="username" value="admin" disabled required />
-
-            <label htmlFor="password">Password</label>
-            <input type="password" id="password" name="password" required />
-            <button type="submit">Login</button>
-          </form>
-        </div>
-      </main>
-  )
+  
+  if (app == '/login') {
+    return <Login onLogin={onLogin}/>
+  } else {
+    let content;
+    
+    switch (app) {
+      case '/home':
+        content = <h1 style={{padding: '20px'}}>Welcome admin</h1>
+        break
+      case '/rooms':
+        content = <Rooms reLogin={() => changeApp('/login')}/>
+    }
+    
+    return (
+      <div className="container">
+        <nav className="navbar">
+          <ul>
+            <li onClick={_ => changeApp('/home')}><a>Home</a></li>
+            <li onClick={_ => changeApp('/rooms')}><a>Rooms</a></li>
+            <li onClick={_ => changeApp('/batches')}><a>Batches</a></li>
+          </ul>
+        </nav>
+        <main className="content">
+          {content}
+        </main>
+      </div>
+    )
+  }
 }
 
 export default App;

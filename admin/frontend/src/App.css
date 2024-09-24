@@ -1,46 +1,35 @@
-.login-card {
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  min-width: 300px;
-  width: 100%;
-  text-align: center;
-}
-
-h2 {
-  margin-bottom: 20px;
-  font-size: 24px;
-}
-
-form {
+.container {
   display: flex;
-  flex-direction: column;
+  width: 100vw;
 }
 
-label {
-  margin-bottom: 8px;
-  font-size: 14px;
-  color: #333;
-  text-align: left;
+.navbar {
+  background-color: #333;
+  width: 200px; /* Fixed width for the navbar */
+  height: 100vh; /* Full height of the viewport */
 }
 
-input {
-  padding: 10px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+.navbar ul {
+  list-style-type: none;
+  padding: 20px 0;
 }
 
-button {
-  padding: 10px;
-  background-color: #007BFF;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
+.navbar ul li {
+  padding: 15px 20px;
+}
+
+.navbar ul li {
+  color: white;
+  text-decoration: none;
+  display: block;
+}
+
+.navbar ul li:hover {
+  background-color: #575757;
   cursor: pointer;
 }
 
-button:hover {
-  background-color: #0056b3;
+.content {
+  padding: 20px;
+  flex-grow: 1; /* Allows the content to take the remaining space */
 }

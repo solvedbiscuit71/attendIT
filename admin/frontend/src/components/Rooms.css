@@ -1,0 +1,112 @@
+.room-list {
+  padding: 20px;
+}
+
+.room-list .header {
+  display: flex;
+  justify-content: space-between;
+  margin-block: 20px;
+  gap: 20px;
+}
+
+.room-list .header input {
+  padding: 10px;
+  margin: 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  flex-grow: 1;
+}
+
+.room-list .new-button {
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  flex-grow: 1;
+  max-width: 100px;
+}
+
+.room-list .new-button:hover {
+  background-color: #0056b3;
+}
+
+.room-list .list {
+  list-style-type: none;
+  padding: 20px 0;
+}
+
+.room-list .list li {
+  padding: 20px 0px;
+  border-bottom: 1px solid #333;
+}
+
+.room-list .list li:first-of-type {
+  border-top: 1px solid #333;
+}
+
+.room-list .list li a {
+  cursor: pointer;
+}
+
+.room-create {
+  margin-block: 20px;
+}
+
+.room-name, .room-passwd {
+  margin-block: 20px;
+}
+
+.room-name label, .room-passwd label {
+  margin-right: 10px;
+  font-size: 1rem;
+  text-align: left;
+}
+
+.room-name input, .room-passwd input {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.room-create p {
+  font-size: 1.2rem;
+  text-decoration: underline;
+}
+
+.room-create ul {
+  list-style-type: none;
+  padding: 20px 0;
+}
+
+.room-create ul span {
+  font-weight: 700;
+}
+
+.room-create form {
+  margin-block: 20px;
+  display: flex;
+}
+
+.room-create form input {
+  margin-right: 5px;
+}
+
+.room-create form span {
+  margin-right: 5px;
+  align-self: center;
+}
+
+.room-create button {
+  padding: 5px 10px;
+  background-color: #007BFF;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.room-create button[type='reset'] {
+  margin-right: 10px;
+}

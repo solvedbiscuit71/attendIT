@@ -1,5 +1,6 @@
 from passlib.context import CryptContext
 import jwt
+from fastapi import HTTPException
 from datetime import datetime, timedelta
 
 SECRET_KEY = "iloveyou"
