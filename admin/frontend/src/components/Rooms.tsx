@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import RoomCreate from './Rooms/RoomCreate';
 import RoomList from './Rooms/RoomList';
 import "./Rooms.css"
+import RoomView from './Rooms/RoomView';
 
 interface Room {
   _id: string;
@@ -12,7 +13,8 @@ const addUrl = 'http://127.0.0.1:8000/rooms';
 
 function Rooms({reLogin}: {reLogin: () => void}) {
   const [roomsData, setRoomsData] = useState<Room[]>([]);
-  const [app, changeApp] = useState('/loading')
+  const [app, changeApp] = useState('/loading');
+  const [viewData, setViewData] = useState(null);
   
   const refreshRooms = () => {
     const fetchRooms = async () => {
@@ -57,8 +59,6 @@ function Rooms({reLogin}: {reLogin: () => void}) {
     });
     
     if (response.ok) {
-      const result = await response.json()
-      console.log(result)
       refreshRooms();
       changeApp('/list');
     } else if (response.status == 401) {
@@ -71,17 +71,57 @@ function Rooms({reLogin}: {reLogin: () => void}) {
       console.error("Error:", error)
     }
   }
+
+  const handleViewRequest = async (_id: string) => {
+    const token = document.cookie.split('=')[1];
+    const response = await fetch(fetchUrl + `/${_id}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+    
+    if (response.ok) {
+      const data = await response.json();
+      setViewData(data);
+      changeApp("/view");
+    } else {
+      const error = await response.json();
+      console.error("Error:", error);
+    }
+  }
+  
+  const handleDelete = async (_id: string) => {
+    const token = document.cookie.split('=')[1];
+    const response = await fetch(fetchUrl + `/${_id}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      method: "DELETE",
+    })
+    
+    if (response.ok) {
+      refreshRooms();
+      changeApp("/list");
+    } else {
+      const error = await response.json();
+      console.error("Error:", error);
+    }
+    
+  }
   
   let content;
     switch (app) {
       case '/loading':
-        content = <p style={{marginBlock: '20px'}}>Loading rooms...</p>
+        content = <p style={{marginBlock: '20px'}}>Loading...</p>
         break;
       case '/list':
-        content = <RoomList rooms={roomsData} onCreate={() => changeApp('/create')}/>
+        content = <RoomList rooms={roomsData} onCreate={() => changeApp('/create')} onView={(_id) => handleViewRequest(_id)} />
         break;
       case '/create':
         content = <RoomCreate onSubmit={handleSubmit}/>
+        break;
+      case '/view':
+        content = <RoomView data={viewData} onBack={() => changeApp('/list')} onDelete={handleDelete} />
     }
   
   return (

@@ -4,7 +4,7 @@ interface Room {
   _id: string;
 };
 
-function RoomList({rooms, onCreate}: {rooms: Room[], onCreate: () => void}) {
+function RoomList({rooms, onCreate, onView}: {rooms: Room[], onCreate: () => void, onView: (name: string) => void}) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredRooms = rooms.filter(room =>
@@ -24,7 +24,7 @@ function RoomList({rooms, onCreate}: {rooms: Room[], onCreate: () => void}) {
         <button className="new-button" onClick={onCreate}>New</button>
       </div>
       <ul className="list">
-        {filteredRooms.length > 0 ? filteredRooms.map(room => <li key={room._id}><a>{room._id}</a></li>) : <p>{errorMessage}</p>}
+        {filteredRooms.length > 0 ? filteredRooms.map(room => <li key={room._id}><a onClick={_ => onView(room._id)}>{room._id}</a></li>) : <p>{errorMessage}</p>}
       </ul>
     </>
   )

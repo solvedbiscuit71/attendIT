@@ -70,7 +70,7 @@
   border-radius: 4px;
 }
 
-.room-create p {
+.room-create h2 {
   font-size: 1.2rem;
   text-decoration: underline;
 }
@@ -91,6 +91,9 @@
 
 .room-create form input {
   margin-right: 5px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
 .room-create form span {
@@ -99,7 +102,7 @@
 }
 
 .room-create button {
-  padding: 5px 10px;
+  padding: 10px 15px;
   background-color: #007BFF;
   color: #fff;
   border: none;
@@ -107,6 +110,10 @@
   cursor: pointer;
 }
 
-.room-create button[type='reset'] {
-  margin-right: 10px;
+.room-create .red-button  {
+  background-color: #ff4242
+}
+
+.room-create > button:last-of-type {
+  margin-left: 10px;
 }

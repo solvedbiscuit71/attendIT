@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo.errors import ServerSelectionTimeoutError, ConnectionFailure
 from bson import ObjectId
 from pydantic import BaseModel, Field
 
@@ -14,7 +15,7 @@ app = FastAPI()
 MONGODB_URL = "mongodb://localhost:27017"
 DB_NAME = "attendIT"
 
-client = AsyncIOMotorClient(MONGODB_URL)
+client = AsyncIOMotorClient(MONGODB_URL, serverSelectionTimeoutMS=5000)
 db = client[DB_NAME]
 
 origins = [
@@ -42,6 +43,7 @@ class RoomData(BaseModel):
 CORRECT_USERNAME = "admin"
 CORRECT_PASSWORD = hash_password("password123")
 
+
 @app.post("/login")
 async def login(request: LoginRequest):
     if request.username == CORRECT_USERNAME and verify_password(request.password, CORRECT_PASSWORD):
@@ -60,9 +62,36 @@ async def verify_access(token: str = Depends(oauth2_scheme)) -> bool:
 @app.get("/rooms")
 async def get_rooms(verified: bool = Depends(verify_access)):
     rooms_id = []
-    async for _id in db.rooms.find({}, {"_id": True}):
-        rooms_id.append(_id)
-    return rooms_id
+    try:
+        async for _id in db.rooms.find({}, {"_id": True}):
+            rooms_id.append(_id)
+        print(rooms_id)
+        return rooms_id
+    except (ServerSelectionTimeoutError, ConnectionFailure) as e:
+        return JSONResponse(content={"message": "Database Failure"}, status_code=500)
+
+@app.get("/rooms/{_id}")
+async def get_rooms_info(_id: str, verified: bool = Depends(verify_access)):
+    try:
+        room = await db.rooms.find_one({"_id": _id}, {"password": False})
+        if room is None:
+            return JSONResponse(content={"message": "Record with _id does not exists"}, status_code=404)
+        return room
+    except (ServerSelectionTimeoutError, ConnectionFailure) as e:
+        return JSONResponse(content={"message": "Database Failure"}, status_code=500)
+
+@app.delete("/rooms/{_id}")
+async def delete_rooms(_id: str, verified: bool = Depends(verify_access)):
+    try:
+        result = await db.rooms.delete_one({"_id": _id})
+        if result.deleted_count == 1:
+            return {"message": f"Successfully deleted {_id}"}
+        elif result.deleted_count == 0:
+            return JSONResponse(content={"message": "Record with _id does not exists"}, status_code=404)
+        else:
+            raise ConnectionFailure
+    except (ServerSelectionTimeoutError, ConnectionFailure) as e:
+        return JSONResponse(content={"message": "Database Failure"}, status_code=500)
 
 @app.post("/rooms")
 async def add_rooms(body: RoomData, verified: bool = Depends(verify_access)):
@@ -77,5 +106,7 @@ async def add_rooms(body: RoomData, verified: bool = Depends(verify_access)):
         body["password"] = hash_password(body["password"])
         result = await db.rooms.insert_one(body)
         return JSONResponse(content={"message": "Data created successfully"}, status_code=201)
+    except (ServerSelectionTimeoutError, ConnectionFailure) as e:
+        return JSONResponse(content={"message": "Database Failure"}, status_code=500)
     except Exception as e:
         return JSONResponse(content={"message": str(e)}, status_code=500)

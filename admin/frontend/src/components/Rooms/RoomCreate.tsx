@@ -37,7 +37,6 @@ function RoomCreate({onSubmit}: {onSubmit: (data: any) => void}) {
       password: passwd,
       additional_info: fields
     }
-    console.log(data)
     onSubmit(data)
   }
 
@@ -53,7 +52,7 @@ function RoomCreate({onSubmit}: {onSubmit: (data: any) => void}) {
       </div>
 
       
-      <p>Additional Fields</p>
+      <h2>Additional Info</h2>
       
       {
         Object.keys(fields).length > 0 &&
@@ -69,7 +68,7 @@ function RoomCreate({onSubmit}: {onSubmit: (data: any) => void}) {
         <button type='submit'>Add</button>
       </form>
       
-      <button type='reset' onClick={() => onSubmit(null)}>Cancel</button>
+      <button className="red-button" onClick={() => onSubmit(null)}>Cancel</button>
       <button onClick={handleSubmit}>Submit</button>
     </div>
   )
