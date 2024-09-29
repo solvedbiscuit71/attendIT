@@ -43,3 +43,22 @@
   padding: 20px;
   flex-grow: 1; /* Allows the content to take the remaining space */
 }
+
+.hero h1 {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.hero p {
+  text-align: center;
+}
+
+.hero img {
+  margin-top: 20px;
+  width: 50%;
+  
+  position: relative;
+  left: 25%;
+  
+  border-radius: 1em;
+}

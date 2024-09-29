@@ -4,6 +4,17 @@ import Login from "./components/Login";
 import Rooms from "./components/Rooms";
 import "./App.css"
 
+function Hero() {
+  return (
+    <div className="hero">
+      <h1>Welcome to AttendIT's Admin Portal</h1>
+      <p>Delegating attendance to the attendees.</p>
+      
+      <img src="/classroom.jpeg" alt="A Image of a classroom" />
+    </div>
+  )
+}
+
 function App() {
   const [app, changeApp] = useState('/login');
   
@@ -23,7 +34,7 @@ function App() {
     
     switch (app) {
       case '/home':
-        content = <h1 style={{padding: '20px'}}>Welcome admin</h1>
+        content = <Hero/>
         break
       case '/rooms':
         content = <Rooms reLogin={() => changeApp('/login')}/>
