@@ -4,6 +4,9 @@ import Login from "./components/Login";
 import Rooms from "./components/Rooms";
 import "./App.css"
 
+const refreshTimeout = 10 * 60 * 1000; // 10 minutes
+const refreshUrl = 'http://127.0.0.1:8000/token/refresh';
+
 function Hero() {
   return (
     <div className="hero">
@@ -17,14 +20,42 @@ function Hero() {
 
 function App() {
   const [app, changeApp] = useState('/login');
+  const [refreshCount, setRefreshCount] = useState(0);
   
   const onLogin = () => {
     changeApp('/home');
+
+    const id = setTimeout(refreshToken, refreshTimeout);
+    setRefreshCount(id);
   }
   
   const logout = () => {
       document.cookie = `token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
       changeApp('/login');
+      clearInterval(refreshCount);
+      setRefreshCount(0);
+  }
+  
+  const refreshToken = async () => {
+    const token = document.cookie.split('=')[1];
+    const response = await fetch(refreshUrl, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      document.cookie = `token=${result.access_token}`;
+      
+      const id = setTimeout(refreshToken, refreshTimeout);
+      setRefreshCount(id);
+    } else if (response.status == 401) {
+      logout();
+    } else {
+      const error = await response.json();
+      console.error("Error:", error)
+    }
   }
   
   if (app == '/login') {

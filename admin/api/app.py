@@ -73,6 +73,11 @@ async def verify_access(token: str = Depends(oauth2_scheme)) -> bool:
         return True
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
+@app.get("/token/refresh")
+async def refresh_token(verified: bool = Depends(verify_access)):
+    access_token = create_access_token(data={"sub": CORRECT_USERNAME})
+    return {"access_token": access_token, "token_type": "bearer"}
+
 
 # ROOMS
 @app.get("/rooms")
@@ -81,7 +86,6 @@ async def get_rooms(verified: bool = Depends(verify_access)):
     try:
         async for _id in db.rooms.find({}, {"_id": True}):
             rooms_id.append(_id)
-        print(rooms_id)
         return rooms_id
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)
@@ -135,7 +139,6 @@ async def get_batches(verified: bool = Depends(verify_access)):
     try:
         async for _id in db.batches.find({}, {"_id": True}):
             batches_id.append(_id)
-        print(batches_id)
         return batches_id
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)
