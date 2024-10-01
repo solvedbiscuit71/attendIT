@@ -7,6 +7,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.errors import ServerSelectionTimeoutError, ConnectionFailure
 from bson import ObjectId
 from pydantic import BaseModel, Field
+from datetime import datetime
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
 
@@ -43,13 +44,7 @@ class RoomData(BaseModel):
 class MemberData(BaseModel):
     id: str = Field(alias='_id')
     name: str
-
-    class Config:
-        extra = 'forbid'
-
-class BatchData(BaseModel):
-    id: str = Field(alias='_id')
-    members: list[MemberData] = Field(min_length=1)
+    password: str
     additional_info: dict = {}
     
 
@@ -75,6 +70,7 @@ async def verify_access(token: str = Depends(oauth2_scheme)) -> bool:
 
 @app.get("/token/refresh")
 async def refresh_token(verified: bool = Depends(verify_access)):
+    print("LOG: accepted /refresh on", datetime.now().strftime(r"%Y-%m-%d %H:%M:%S"))
     access_token = create_access_token(data={"sub": CORRECT_USERNAME})
     return {"access_token": access_token, "token_type": "bearer"}
 
@@ -132,31 +128,31 @@ async def add_rooms(body: RoomData, verified: bool = Depends(verify_access)):
         return JSONResponse(content={"message": str(e)}, status_code=500)
     
 
-# BATCHES
-@app.get("/batches")
-async def get_batches(verified: bool = Depends(verify_access)):
-    batches_id = []
+# MEMBERS
+@app.get("/members")
+async def get_members(verified: bool = Depends(verify_access)):
+    members = []
     try:
-        async for _id in db.batches.find({}, {"_id": True}):
-            batches_id.append(_id)
-        return batches_id
+        async for _id in db.members.find({}, {"_id": True, "name": True}):
+            members.append(_id)
+        return members
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)
 
-@app.get("/batches/{_id}")
-async def get_batches_info(_id: str, verified: bool = Depends(verify_access)):
+@app.get("/members/{_id}")
+async def get_members_info(_id: str, verified: bool = Depends(verify_access)):
     try:
-        batch = await db.batches.find_one({"_id": _id})
-        if batch is None:
+        member = await db.members.find_one({"_id": _id}, {"password": False})
+        if member is None:
             return JSONResponse(content={"message": "Record with _id does not exists"}, status_code=404)
-        return batch
+        return member
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)
 
-@app.delete("/batches/{_id}")
-async def delete_batches(_id: str, verified: bool = Depends(verify_access)):
+@app.delete("/members/{_id}")
+async def delete_members(_id: str, verified: bool = Depends(verify_access)):
     try:
-        result = await db.batches.delete_one({"_id": _id})
+        result = await db.members.delete_one({"_id": _id})
         if result.deleted_count == 1:
             return {"message": f"Successfully deleted {_id}"}
         elif result.deleted_count == 0:
@@ -166,10 +162,10 @@ async def delete_batches(_id: str, verified: bool = Depends(verify_access)):
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)
 
-@app.post("/batches")
-async def add_batches(body: BatchData, verified: bool = Depends(verify_access)):
+@app.post("/members")
+async def add_batches(body: MemberData, verified: bool = Depends(verify_access)):
     try:
-        existing_record = await db.batches.find_one({"_id": body.id})
+        existing_record = await db.members.find_one({"_id": body.id})
         if existing_record:
             return JSONResponse(content={"message": "Record with _id already exists"}, status_code=409)
         
@@ -177,7 +173,7 @@ async def add_batches(body: BatchData, verified: bool = Depends(verify_access)):
         body.update({"_id": body["id"]})
         body.pop("id")
         
-        result = await db.batches.insert_one(body)
+        result = await db.members.insert_one(body)
         return JSONResponse(content={"message": "Data created successfully"}, status_code=201)
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)

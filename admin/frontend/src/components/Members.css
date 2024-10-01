@@ -1,0 +1,132 @@
+.members {
+  padding: 20px;
+}
+
+.members .header {
+  display: flex;
+  justify-content: space-between;
+  margin-block: 20px;
+  gap: 20px;
+}
+
+.members .header input {
+  padding: 10px;
+  margin: 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  flex-grow: 1;
+}
+
+.members .new-button {
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  flex-grow: 1;
+  max-width: 100px;
+}
+
+.members .new-button:hover {
+  background-color: #0056b3;
+}
+
+.members .list {
+  list-style-type: none;
+  padding: 20px 0;
+}
+
+.members .list li {
+  padding: 20px 0px;
+  border-bottom: 1px solid #333;
+}
+
+.members .list li:first-of-type {
+  border-top: 1px solid #333;
+}
+
+.members .list li a {
+  cursor: pointer;
+  
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+}
+
+.members .list li a .member-id {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.member-view {
+    padding: 20px 0;
+}
+
+.member-view .member-field, .member-create .member-field {
+    margin-block: 20px;
+}
+
+.member-view .member-field label, .member-create .member-field label {
+  margin-right: 10px;
+  font-size: 1rem;
+  text-align: left;
+}
+
+.member-view .member-field input, .member-create .member-field input {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.member-view h2 {
+  font-size: 1.2rem;
+  text-decoration: underline;
+}
+
+.member-view ul, .member-create ul {
+  list-style-type: none;
+  padding: 20px 0;
+}
+
+.member-view ul span, .member-create ul span {
+  font-weight: 700;
+}
+
+.member-view .button, .member-create .button {
+  padding: 10px 15px;
+  background-color: #007BFF;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.member-view .button.red, .member-create .button.red {
+  background-color: #ff4242
+}
+
+.member-view > button:last-of-type, .member-create > button:last-of-type {
+  margin-left: 10px;
+}
+
+.member-create {
+    padding: 20px 0;
+}
+
+.member-create form {
+  margin-block: 20px;
+  display: flex;
+}
+
+.member-create form input {
+  margin-right: 5px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.member-create form span {
+  margin-right: 5px;
+  align-self: center;
+}

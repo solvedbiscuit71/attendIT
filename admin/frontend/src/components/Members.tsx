@@ -1,23 +1,27 @@
 import { useEffect, useState } from 'react';
-import RoomCreate from './Rooms/RoomCreate';
-import RoomList from './Rooms/RoomList';
-import "./Rooms.css"
-import RoomView from './Rooms/RoomView';
+import "./Members.css";
+import MemberList from './Members/MemberList';
+import MemberView from './Members/MemberView';
+import MemberCreate from './Members/MemberCreate';
 
-interface Room {
+interface Member {
   _id: string;
+  name: string;
 };
 
-const fetchUrl = 'http://127.0.0.1:8000/rooms';
-const addUrl = 'http://127.0.0.1:8000/rooms';
+const fetchUrl = 'http://127.0.0.1:8000/members';
+const addUrl = 'http://127.0.0.1:8000/members';
 
-function Rooms({reLogin}: {reLogin: () => void}) {
-  const [roomsData, setRoomsData] = useState<Room[]>([]);
+function Members({reLogin}: {reLogin: () => void}) {
+  // app state
   const [app, changeApp] = useState('/loading');
+  
+  // members data
+  const [membersData, setMembersData] = useState<Member[]>([]);
   const [viewData, setViewData] = useState(null);
   
-  const refreshRooms = () => {
-    const fetchRooms = async () => {
+  const refreshMembers = () => {
+    const fetchMembers = async () => {
       const token = document.cookie.split('=')[1];
       const response = await fetch(fetchUrl, {
           headers: {
@@ -27,7 +31,7 @@ function Rooms({reLogin}: {reLogin: () => void}) {
       
       if (response.ok) {
         const data = await response.json()
-        setRoomsData(data);
+        setMembersData(data);
         changeApp('/list');
       } else if (response.status == 401) {
         reLogin();
@@ -37,10 +41,10 @@ function Rooms({reLogin}: {reLogin: () => void}) {
       }
     };
 
-    fetchRooms();
+    fetchMembers();
   };
   
-  useEffect(refreshRooms, []);
+  useEffect(refreshMembers, []);
   
   const handleSubmit = async (data: any) => {
     if (data == null) {
@@ -59,7 +63,7 @@ function Rooms({reLogin}: {reLogin: () => void}) {
     });
     
     if (response.ok) {
-      refreshRooms();
+      refreshMembers();
       changeApp('/list');
     } else if (response.status == 401) {
       reLogin();
@@ -100,7 +104,7 @@ function Rooms({reLogin}: {reLogin: () => void}) {
     })
     
     if (response.ok) {
-      refreshRooms();
+      refreshMembers();
       changeApp("/list");
     } else {
       const error = await response.json();
@@ -115,21 +119,21 @@ function Rooms({reLogin}: {reLogin: () => void}) {
         content = <p style={{marginBlock: '20px'}}>Loading...</p>
         break;
       case '/list':
-        content = <RoomList rooms={roomsData} onCreate={() => changeApp('/create')} onView={(_id) => handleViewRequest(_id)} />
+        content = <MemberList members={membersData} onCreate={() => changeApp('/create')} onView={handleViewRequest} />
         break;
       case '/create':
-        content = <RoomCreate onSubmit={handleSubmit}/>
+        content = <MemberCreate onSubmit={handleSubmit} />
         break;
       case '/view':
-        content = <RoomView data={viewData} onBack={() => changeApp('/list')} onDelete={handleDelete} />
+        content = <MemberView data={viewData} onBack={() => changeApp('/list')} onDelete={handleDelete} />
     }
   
   return (
-    <div className="rooms">
-      <h1>Rooms</h1>
+    <div className="members">
+      <h1>Members</h1>
       {content}
     </div>
   );
 };
 
-export default Rooms;
+export default Members;

@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { BatchesIcon, HomeIcon, LogoutIcon, RoomsIcon } from "./assets/Icons";
+import { BatchesIcon as MembersIcon, HomeIcon, LogoutIcon, RoomsIcon } from "./assets/Icons";
 import Login from "./components/Login";
 import Rooms from "./components/Rooms";
 import "./App.css"
+import Members from "./components/Members";
 
 const refreshTimeout = 10 * 60 * 1000; // 10 minutes
 const refreshUrl = 'http://127.0.0.1:8000/token/refresh';
@@ -66,9 +67,13 @@ function App() {
     switch (app) {
       case '/home':
         content = <Hero/>
-        break
+        break;
       case '/rooms':
         content = <Rooms reLogin={() => changeApp('/login')}/>
+        break;
+      case '/members':
+        content = <Members reLogin={() => changeApp('/login')}/>
+        break;
     }
     
     return (
@@ -77,7 +82,7 @@ function App() {
           <ul>
             <li onClick={_ => changeApp('/home')}><a><HomeIcon/> Home</a></li>
             <li onClick={_ => changeApp('/rooms')}><a><RoomsIcon/> Rooms</a></li>
-            <li onClick={_ => changeApp('/batches')}><a><BatchesIcon/> Batches</a></li>
+            <li onClick={_ => changeApp('/members')}><a><MembersIcon/> Members</a></li>
           </ul>
           
           <ul>
