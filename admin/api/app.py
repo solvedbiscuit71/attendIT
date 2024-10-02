@@ -172,6 +172,7 @@ async def add_batches(body: MemberData, verified: bool = Depends(verify_access))
         body = body.dict()
         body.update({"_id": body["id"]})
         body.pop("id")
+        body["password"] = hash_password(body["password"])
         
         result = await db.members.insert_one(body)
         return JSONResponse(content={"message": "Data created successfully"}, status_code=201)
