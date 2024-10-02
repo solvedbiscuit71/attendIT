@@ -8,13 +8,14 @@ from pymongo.errors import ServerSelectionTimeoutError, ConnectionFailure
 from bson import ObjectId
 from pydantic import BaseModel, Field
 from datetime import datetime
+from os import getenv
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
 
 app = FastAPI()
 
-MONGODB_URL = "mongodb://localhost:27017"
-DB_NAME = "attendIT"
+MONGODB_URL = getenv("MONGO_URL")
+DB_NAME = getenv("MONGO_DB")
 
 client = AsyncIOMotorClient(MONGODB_URL, serverSelectionTimeoutMS=5000)
 db = client[DB_NAME]
@@ -49,8 +50,8 @@ class MemberData(BaseModel):
     
 
 
-CORRECT_USERNAME = "admin"
-CORRECT_PASSWORD = hash_password("password123")
+CORRECT_USERNAME = getenv("CORRECT_USERNAME")
+CORRECT_PASSWORD = hash_password(getenv("CORRECT_PASSWORD"))
 
 
 @app.post("/login")

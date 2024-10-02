@@ -14,3 +14,11 @@ check pip version
 
 install dependencies
     pip install -r requirement.txt
+
+create .env file
+    export MONGO_URL="<connection url>"
+    export MONGO_DB="<database name>"
+    export CORRECT_USERNAME="admin"
+    export CORRECT_PASSWORD="<secure admin password>"
+
+execute startup.sh
