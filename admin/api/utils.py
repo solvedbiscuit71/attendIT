@@ -2,8 +2,9 @@ from passlib.context import CryptContext
 import jwt
 from fastapi import HTTPException
 from datetime import datetime, timedelta
+from os import getenv
 
-SECRET_KEY = "iloveyou"
+SECRET_KEY = getenv("JWT_SECRET")
 
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 

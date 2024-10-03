@@ -67,7 +67,7 @@ async def verify_access(token: str = Depends(oauth2_scheme)) -> bool:
     token_data = verify_access_token(token)
     if token_data.get('sub') == CORRECT_USERNAME:
         return True
-    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+    raise HTTPException(status_code=401, detail="Invalid token")
 
 @app.get("/token/refresh")
 async def refresh_token(verified: bool = Depends(verify_access)):
