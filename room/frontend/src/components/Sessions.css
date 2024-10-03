@@ -1,0 +1,139 @@
+.sessions {
+  padding: 20px;
+}
+
+.sessions .header {
+  display: flex;
+  justify-content: space-between;
+  margin-block: 20px;
+  gap: 20px;
+}
+
+.sessions .header input {
+  padding: 10px;
+  margin: 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  flex-grow: 1;
+}
+
+.sessions .new-button {
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  flex-grow: 1;
+  max-width: 100px;
+}
+
+.sessions .new-button:hover {
+  background-color: #0056b3;
+}
+
+.sessions .new-button.disabled {
+  cursor: no-drop;
+}
+
+.sessions .session-list > div:first-of-type {
+  margin-bottom: 40px;
+}
+
+.sessions .session-list h2 {
+  font-size: 22px;
+  margin: 30px 0 20px;
+  
+  display: flex;
+  gap: 5px;
+}
+
+.sessions .session-list a {
+  cursor: pointer;
+}
+
+.sessions .list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.sessions .list li {
+  padding: 20px 0px;
+  border-bottom: 1px solid #333;
+}
+
+.sessions .list li:first-of-type {
+  border-top: 1px solid #333;
+}
+
+.session-view {
+    padding: 20px 0;
+}
+
+.session-view .session-field, .session-create .session-field {
+    margin-block: 20px;
+}
+
+.session-view .session-field label, .session-create .session-field label {
+  margin-right: 10px;
+  font-size: 1rem;
+  text-align: left;
+}
+
+.session-view .session-field input, .session-create .session-field input {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.session-view h2 {
+  font-size: 1.2rem;
+  text-decoration: underline;
+}
+
+.session-view ul, .session-create ul {
+  list-style-type: none;
+  padding: 20px 0;
+}
+
+.session-view ul span, .session-create ul span {
+  font-weight: 700;
+}
+
+.session-view .button, .session-create .button {
+  padding: 10px 15px;
+  background-color: #007BFF;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.session-view .button.red, .session-create .button.red {
+  background-color: #ff4242
+}
+
+.session-view > button:last-of-type, .session-create > button:last-of-type {
+  margin-left: 10px;
+}
+
+.session-create {
+    padding: 20px 0;
+}
+
+.session-create form {
+  margin-block: 20px;
+  display: flex;
+}
+
+.session-create form input {
+  margin-right: 5px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.session-create form span {
+  margin-right: 5px;
+  align-self: center;
+}

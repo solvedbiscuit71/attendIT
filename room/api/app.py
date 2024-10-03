@@ -80,13 +80,19 @@ async def refresh_token(username: str = Depends(verify_access)):
 
 
 # ROOMS
-@app.get("/rooms")
-async def get_rooms(verified: bool = Depends(verify_access)):
-    rooms_id = []
+@app.get("/sessions")
+async def get_sessions(room_id: bool = Depends(verify_access)):
+    payload = {"onGoing": None, "history": []}
     try:
-        async for _id in db.rooms.find({}, {"_id": True}):
-            rooms_id.append(_id)
-        return rooms_id
+        on_going = await db.rooms.find_one({"_id": room_id}, {"_id": False, "session_id": True})
+        async for session in db.sessions.find({"room_id": room_id}, {"_id": True, "timestamp": True}):
+            _id = session["_id"]
+            session.pop("_id")
+            if on_going["session_id"] == _id:
+                payload["onGoing"] = session
+            else:
+                payload["history"].append(session)
+        return payload
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)
 

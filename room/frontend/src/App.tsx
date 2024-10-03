@@ -1,7 +1,8 @@
 import { useState } from "react";
-import "./App.css"
-import Login from "./components/Login";
 import { HomeIcon, LogoutIcon, RoomsIcon, SessionIcon } from "./assets/Icons";
+import Login from "./components/Login";
+import Sessions from "./components/Sessions";
+import "./App.css"
 
 const refreshTimeout = 10 * 60 * 1000; // 10 minutes
 const refreshUrl = 'http://127.0.0.1:8001/token/refresh';
@@ -69,6 +70,7 @@ function App() {
         content = <Hero/>
         break;
       case '/sessions':
+        content = <Sessions reLogin={logout}/>
         break;
     }
     
@@ -77,7 +79,7 @@ function App() {
         <nav className="navbar">
           <ul>
             <li onClick={_ => changeApp('/home')}><a><HomeIcon/>Home</a></li>
-            <li onClick={_ => changeApp('/rooms')}><a><SessionIcon/>Sessions</a></li>
+            <li onClick={_ => changeApp('/sessions')}><a><SessionIcon/>Sessions</a></li>
           </ul>
           
           <ul>
