@@ -67,15 +67,15 @@ async def verify_access(token: str = Depends(oauth2_scheme)) -> str:
     room_id = token_data.get('sub') 
     count = await db.rooms.count_documents({"_id": room_id})
     if count == 1:
-        return token_data.get('sub')
+        return room_id
 
     raise HTTPException(status_code=401, detail="Invalid token")
     
 
 @app.get("/token/refresh")
-async def refresh_token(username: str = Depends(verify_access)):
-    print(f"LOG: accepted /refresh for {username} on", datetime.now().strftime(r"%Y-%m-%d %H:%M:%S"))
-    access_token = create_access_token(data={"sub": username})
+async def refresh_token(room_id: str = Depends(verify_access)):
+    print(f"LOG: accepted /refresh for {room_id} on", datetime.now().strftime(r"%Y-%m-%d %H:%M:%S"))
+    access_token = create_access_token(data={"sub": room_id})
     return {"access_token": access_token, "token_type": "bearer"}
 
 

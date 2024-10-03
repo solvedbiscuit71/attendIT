@@ -93,6 +93,8 @@ async def get_rooms_info(_id: str, verified: bool = Depends(verify_access)):
         room = await db.rooms.find_one({"_id": _id}, {"password": False})
         if room is None:
             return JSONResponse(content={"message": "Record with _id does not exists"}, status_code=404)
+        room["ongoing_session"] = room["session_id"] is not None
+        room.pop("session_id")
         return room
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)

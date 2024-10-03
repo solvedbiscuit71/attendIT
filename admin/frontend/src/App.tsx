@@ -69,10 +69,10 @@ function App() {
         content = <Hero/>
         break;
       case '/rooms':
-        content = <Rooms reLogin={() => changeApp('/login')}/>
+        content = <Rooms reLogin={logout}/>
         break;
       case '/members':
-        content = <Members reLogin={() => changeApp('/login')}/>
+        content = <Members reLogin={logout}/>
         break;
     }
     

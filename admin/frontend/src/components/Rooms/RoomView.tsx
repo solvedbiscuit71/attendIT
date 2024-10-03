@@ -5,6 +5,10 @@ function RoomView({ data, onBack, onDelete }: { data: any, onBack: () => void, o
         <label htmlFor="roomid">Name</label>
         <input type="text" id='room-id' value={data._id} readOnly />
       </div>
+      <div className="room-name">
+        <label htmlFor="roomid">Ongoing Session?</label>
+        <input type="text" id='room-id' value={data.ongoing_session ? "Yes" : "No"} readOnly />
+      </div>
 
       <h2>Additional Info</h2>
 

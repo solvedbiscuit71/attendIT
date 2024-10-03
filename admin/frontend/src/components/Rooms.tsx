@@ -84,7 +84,10 @@ function Rooms({reLogin}: {reLogin: () => void}) {
       const data = await response.json();
       setViewData(data);
       changeApp("/view");
-    } else {
+    } else if (response.status == 401) {
+      reLogin();
+    } 
+    else {
       const error = await response.json();
       console.error("Error:", error);
     }
@@ -102,11 +105,12 @@ function Rooms({reLogin}: {reLogin: () => void}) {
     if (response.ok) {
       refreshRooms();
       changeApp("/list");
+    } else if (response.status == 401) {
+      reLogin();
     } else {
       const error = await response.json();
       console.error("Error:", error);
     }
-    
   }
   
   let content;
