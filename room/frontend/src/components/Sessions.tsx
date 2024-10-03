@@ -1,13 +1,21 @@
 import { useEffect, useState } from 'react';
-import "./Sessions.css"
 import SessionList from './Session/SessionList';
+import SessionCreate from './Session/SessionCreate';
+import "./Sessions.css"
 
 interface SessionType {
   onGoing: { timestamp: string; } | null;
   history: { timestamp: string; }[]
 };
 
+interface Members {
+  _id: string;
+  name: string;
+  selected: boolean;
+};
+
 const fetchUrl = 'http://127.0.0.1:8001/sessions';
+const memberUrl = 'http://127.0.0.1:8001/members';
 const addUrl = 'http://127.0.0.1:8001/sessions';
 
 function Sessions({reLogin}: {reLogin: () => void}) {
@@ -16,11 +24,13 @@ function Sessions({reLogin}: {reLogin: () => void}) {
   
   // members data
   const [sessionData, setSessionData] = useState<SessionType | null>(null);
+  const [memberData, setMemberData] = useState<Members[] | null>(null);
   const [viewData, setViewData] = useState(null);
   
   const refreshSessions = () => {
     const fetchSessions = async () => {
       const token = document.cookie.split('=')[1];
+      console.log(token)
       const response = await fetch(fetchUrl, {
           headers: {
               'Authorization': `Bearer ${token}`,
@@ -73,6 +83,26 @@ function Sessions({reLogin}: {reLogin: () => void}) {
       console.error("Error:", error)
     }
   }
+  
+  const handleCreate = async () => {
+    const token = document.cookie.split('=')[1];
+    const response = await fetch(memberUrl, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+    
+    if (response.ok) {
+      const data = await response.json();
+      setMemberData(data);
+      changeApp("/create");
+    } else if (response.status == 401) {
+      reLogin();
+    } else {
+      const error = await response.json();
+      console.error("Error:", error);
+    }
+  }
 
   const handleViewRequest = async (_id: string) => {
     const token = document.cookie.split('=')[1];
@@ -122,9 +152,11 @@ function Sessions({reLogin}: {reLogin: () => void}) {
         break;
       case '/list':
         if (sessionData)
-          content = <SessionList sessions={sessionData} onCreate={() => {}} onView={() => {}} />
+          content = <SessionList sessions={sessionData} onCreate={handleCreate} onView={() => {}} />
         break;
       case '/create':
+        if (memberData)
+          content = <SessionCreate onSubmit={handleSubmit} membersData={memberData} />
         break;
       case '/view':
     }

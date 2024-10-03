@@ -76,7 +76,8 @@ function App() {
     
     return (
       <div className="container">
-        <nav className="navbar">
+        <nav className="navbar"></nav>
+        <nav className="navbar fixed">
           <ul>
             <li onClick={_ => changeApp('/home')}><a><HomeIcon/>Home</a></li>
             <li onClick={_ => changeApp('/sessions')}><a><SessionIcon/>Sessions</a></li>

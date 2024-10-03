@@ -12,6 +12,11 @@ function SessionList({ sessions, onCreate, onView }: { sessions: SessionType, on
   const filteredSessions = sessions.history.filter(session => session.timestamp.toLowerCase().includes(searchTerm.toLowerCase()));
   const filteredSessionsError = sessions.history.length == 0 ? "No previous sessions available..." : "No match found..."
   const ongoing = sessions.onGoing !== null;
+  
+  const handleCreate = () => {
+    if (ongoing) return;
+    onCreate();
+  }
 
   return (
     <>
@@ -22,7 +27,7 @@ function SessionList({ sessions, onCreate, onView }: { sessions: SessionType, on
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <button className={ongoing ? "new-button disabled" : "new-button"} onClick={onCreate}>New</button>
+        <button className={ongoing ? "new-button disabled" : "new-button"} onClick={handleCreate}>New</button>
       </div>
       <div className="session-list">
         <div>

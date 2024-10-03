@@ -1,10 +1,14 @@
 import { useState, useRef } from "react";
 
-function MemberCreate({onSubmit}: {onSubmit: (data: any) => void}) {
-  const [id, setId] = useState('')
-  const [name, setName] = useState('')
-  const [passwd, setPasswd] = useState('')
-  const [fields, setFields] = useState<any>({})
+interface Members {
+  _id: string;
+  name: string;
+  selected: boolean;
+};
+
+function SessionCreate({onSubmit, membersData}: {onSubmit: (data: any) => void, membersData: Members[]}) {
+  const [fields, setFields] = useState<any>({});
+  const [members, setMembers] = useState<Members[]>(membersData);
   const formRef = useRef<HTMLFormElement>(null);
   
   const addField = (event: React.FormEvent) => {
@@ -30,33 +34,47 @@ function MemberCreate({onSubmit}: {onSubmit: (data: any) => void}) {
     
   }
   
-  const handleSubmit = async () => {
-    if (name.length < 5 || passwd.length < 8) return;
-    
+  const handleSubmit = () => {
     const data = {
-      _id: id.toUpperCase(),
-      name: name,
-      password: passwd,
-      additional_info: fields
+      additional_info: fields,
+      members: members.filter(member => member.selected).map(member => {
+        return {
+          _id: member._id
+        }
+      })
     }
     onSubmit(data)
   }
+  
+  const handleCheck = (_id: string) => {
+    setMembers(members.map(member => {
+      if (member._id == _id) {
+        member.selected = member.selected ? false : true;
+      }
+      return member;
+    }))
+  }
 
   return (
-    <div className="member-create">
-      <div className="member-field">
-        <label htmlFor="member-id">ID</label>
-        <input type="text" id='member-id' value={id.toUpperCase()} onChange={(e) => setId(e.target.value)} />
-      </div>
-      <div className="member-field">
-        <label htmlFor="member-name">Name</label>
-        <input type="text" id='member-name' value={name} onChange={(e) => setName(e.target.value)} />
-      </div>
-      <div className="member-field">
-        <label htmlFor="member-passwd">Password</label>
-        <input type="password" id='member-passwd' value={passwd} onChange={(e) => setPasswd(e.target.value)} />
-      </div>
-
+    <div className="session-create">
+      <h2>Participants</h2>
+      
+      {
+        members.length > 0 ?
+          <ul className="participants">
+            {members.map(member => 
+            <li key={member._id}>
+            <div className="member">
+              <input type="checkbox" onClick={() => handleCheck(member._id)} />
+              <div>
+                <div>{member._id}</div>
+                <div>{member.name}</div>
+              </div>
+            </div>
+            </li>)}
+          </ul>
+        : <p>No members avialable...</p>
+      }
       
       <h2>Additional Info</h2>
       
@@ -80,4 +98,4 @@ function MemberCreate({onSubmit}: {onSubmit: (data: any) => void}) {
   )
 }
 
-export default MemberCreate;
+export default SessionCreate;

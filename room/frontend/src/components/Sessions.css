@@ -118,7 +118,32 @@
 }
 
 .session-create {
-    padding: 20px 0;
+  padding: 20px 0;
+}
+
+.session-create ul.participants {
+  list-style-type: none;
+  padding: 20px 0 20px;
+  
+  max-height: 50vh;
+  overflow-y: scroll;
+}
+
+.session-create ul.participants li {
+  padding: 10px 0px;
+  border-bottom: 1px solid #333;
+}
+
+.sessions ul.participants li:first-of-type {
+  border-top: 1px solid #333;
+}
+
+.session-create .member {
+  display: flex;
+  flex-direction: row;
+  
+  gap: 10px;
+
 }
 
 .session-create form {
