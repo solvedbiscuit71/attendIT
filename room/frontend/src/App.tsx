@@ -1,11 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { HomeIcon, LogoutIcon, RoomsIcon, SessionIcon } from "./assets/Icons";
+
 import Login from "./components/Login";
 import Sessions from "./components/Sessions";
+
+import TokenContext from "./assets/TokenContext";
 import "./App.css"
 
-const refreshTimeout = 10 * 60 * 1000; // 10 minutes
 const refreshUrl = 'http://127.0.0.1:8001/token/refresh';
+
+function useInterval(callback: any, delay: number) {
+  const savedCallback = useRef<any>();
+
+  useEffect(() => {
+    savedCallback.current = callback;
+  }, [callback]);
+
+  useEffect(() => {
+    function tick() {
+      if (savedCallback.current) {
+        savedCallback.current();
+      }
+    }
+    if (delay !== null) {
+      let id = setInterval(tick, delay);
+      return () => clearInterval(id);
+    }
+  }, [delay]);
+}
 
 function Hero() {
   return (
@@ -20,45 +42,44 @@ function Hero() {
 
 function App() {
   const [app, changeApp] = useState('/login');
-  const [roomId, changeRoomId] = useState('');
-  const [refreshCount, setRefreshCount] = useState(0);
+  const [token, setToken] = useState('');
+  const [roomId, setRoomId] = useState('');
   
-  const onLogin = (name: string) => {
-    const id = setTimeout(refreshToken, refreshTimeout);
-
-    setRefreshCount(id);
-    changeRoomId(name);
+  const onLogin = (name: string, newToken: string) => {
+    setToken(newToken);
+    setRoomId(name);
     changeApp('/home');
   }
   
-  const logout = () => {
-      document.cookie = `token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
-      changeApp('/login');
-      clearInterval(refreshCount);
-      setRefreshCount(0);
+  const onLogout = () => {
+    setToken('');
+    changeApp('/login');
   }
-  
-  const refreshToken = async () => {
-    const token = document.cookie.split('=')[1];
-    const response = await fetch(refreshUrl, {
+
+  useInterval(() => {
+    if (token.length === 0) return;
+    fetch(refreshUrl, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
+    })
+    .then(response => {
+      if (response.ok) {
+        return response.json();
+      } else if (response.status == 401) {
+        onLogout();
+      } 
+      else {
+        throw response.json();
+      }
+    })
+    .then((data: any) => {
+      setToken(data.access_token);
+    })
+    .catch(error => {
+      console.error("Error:", error);
     });
-
-    if (response.ok) {
-      const result = await response.json();
-      document.cookie = `token=${result.access_token}`;
-      
-      const id = setTimeout(refreshToken, refreshTimeout);
-      setRefreshCount(id);
-    } else if (response.status == 401) {
-      logout();
-    } else {
-      const error = await response.json();
-      console.error("Error:", error)
-    }
-  }
+  }, 10 * 60 * 1000); // 10 minutes  
   
   if (app == '/login') {
     return <Login onLogin={onLogin}/>
@@ -70,28 +91,30 @@ function App() {
         content = <Hero/>
         break;
       case '/sessions':
-        content = <Sessions reLogin={logout}/>
+        content = <Sessions reLogin={onLogout}/>
         break;
     }
     
     return (
-      <div className="container">
-        <nav className="navbar"></nav>
-        <nav className="navbar fixed">
-          <ul>
-            <li onClick={_ => changeApp('/home')}><a><HomeIcon/>Home</a></li>
-            <li onClick={_ => changeApp('/sessions')}><a><SessionIcon/>Sessions</a></li>
-          </ul>
-          
-          <ul>
-            <li className="no-hover"><a style={{alignItems: 'center'}}><RoomsIcon/>{roomId}</a></li>
-            <li onClick={logout}><a><LogoutIcon/>Logout</a></li>
-          </ul>
-        </nav>
-        <main className="content">
-          {content}
-        </main>
-      </div>
+      <TokenContext.Provider value={token}>
+        <div className="container">
+          <nav className="navbar"></nav>
+          <nav className="navbar fixed">
+            <ul>
+              <li onClick={_ => changeApp('/home')}><a><HomeIcon />Home</a></li>
+              <li onClick={_ => changeApp('/sessions')}><a><SessionIcon />Sessions</a></li>
+            </ul>
+
+            <ul>
+              <li className="no-hover"><a style={{ alignItems: 'center' }}><RoomsIcon />{roomId}</a></li>
+              <li onClick={onLogout}><a><LogoutIcon />Logout</a></li>
+            </ul>
+          </nav>
+          <main className="content">
+            {content}
+          </main>
+        </div>
+      </TokenContext.Provider>
     )
   }
 }

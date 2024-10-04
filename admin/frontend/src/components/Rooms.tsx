@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import RoomCreate from './Rooms/RoomCreate';
 import RoomList from './Rooms/RoomList';
 import "./Rooms.css"
 import RoomView from './Rooms/RoomView';
+import TokenContext from '../assets/TokenContext';
 
 interface Room {
   _id: string;
@@ -15,10 +16,10 @@ function Rooms({reLogin}: {reLogin: () => void}) {
   const [roomsData, setRoomsData] = useState<Room[]>([]);
   const [app, changeApp] = useState('/loading');
   const [viewData, setViewData] = useState(null);
+  const token = useContext(TokenContext);
   
   const refreshRooms = () => {
     const fetchRooms = async () => {
-      const token = document.cookie.split('=')[1];
       const response = await fetch(fetchUrl, {
           headers: {
               'Authorization': `Bearer ${token}`,
@@ -48,7 +49,6 @@ function Rooms({reLogin}: {reLogin: () => void}) {
       return;      
     }
     
-    const token = document.cookie.split('=')[1];
     const response = await fetch(addUrl, {
         method: 'POST',
         headers: {
@@ -73,7 +73,6 @@ function Rooms({reLogin}: {reLogin: () => void}) {
   }
 
   const handleViewRequest = async (_id: string) => {
-    const token = document.cookie.split('=')[1];
     const response = await fetch(fetchUrl + `/${_id}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -94,7 +93,6 @@ function Rooms({reLogin}: {reLogin: () => void}) {
   }
   
   const handleDelete = async (_id: string) => {
-    const token = document.cookie.split('=')[1];
     const response = await fetch(fetchUrl + `/${_id}`, {
       headers: {
         'Authorization': `Bearer ${token}`,

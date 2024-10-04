@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import './Login.css'
 
 interface Props {
-    onLogin: (name: string) => void;
+    onLogin: (name: string, token: string) => void;
 }
 
 const url = 'http://127.0.0.1:8001/login'
@@ -36,10 +36,7 @@ function Login({onLogin: LoggedIn}: Props) {
 
         if (response.ok) {
           const result = await response.json();
-          // TODO: document.cookie = `token=${result.access_token}; Secure; HttpOnly`;
-          document.cookie = `token=${result.access_token}`;
-          console.log("Login Successfully")
-          LoggedIn(body.username)
+          LoggedIn(body.username, result.access_token)
         } else if (response.status == 401) {
           alert("Invalid password");
         } else if (response.status == 404) {

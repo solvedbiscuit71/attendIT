@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import "./Members.css";
 import MemberList from './Members/MemberList';
 import MemberView from './Members/MemberView';
 import MemberCreate from './Members/MemberCreate';
+import TokenContext from '../assets/TokenContext';
 
 interface Member {
   _id: string;
@@ -15,6 +16,7 @@ const addUrl = 'http://127.0.0.1:8000/members';
 function Members({reLogin}: {reLogin: () => void}) {
   // app state
   const [app, changeApp] = useState('/loading');
+  const token = useContext(TokenContext);
   
   // members data
   const [membersData, setMembersData] = useState<Member[]>([]);
@@ -22,7 +24,6 @@ function Members({reLogin}: {reLogin: () => void}) {
   
   const refreshMembers = () => {
     const fetchMembers = async () => {
-      const token = document.cookie.split('=')[1];
       const response = await fetch(fetchUrl, {
           headers: {
               'Authorization': `Bearer ${token}`,
@@ -52,7 +53,6 @@ function Members({reLogin}: {reLogin: () => void}) {
       return;      
     }
     
-    const token = document.cookie.split('=')[1];
     const response = await fetch(addUrl, {
         method: 'POST',
         headers: {
@@ -77,7 +77,6 @@ function Members({reLogin}: {reLogin: () => void}) {
   }
 
   const handleViewRequest = async (_id: string) => {
-    const token = document.cookie.split('=')[1];
     const response = await fetch(fetchUrl + `/${_id}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -97,7 +96,6 @@ function Members({reLogin}: {reLogin: () => void}) {
   }
   
   const handleDelete = async (_id: string) => {
-    const token = document.cookie.split('=')[1];
     const response = await fetch(fetchUrl + `/${_id}`, {
       headers: {
         'Authorization': `Bearer ${token}`,

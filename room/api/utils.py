@@ -22,13 +22,11 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
     jwt_token = jwt.encode(to_encode, SECRET_KEY, algorithm="HS256")
-    print("[LOG] Create", jwt_token)
     return jwt_token
 
 def verify_access_token(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        print("[LOG] Received", token)
         return payload
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")

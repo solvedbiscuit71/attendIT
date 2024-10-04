@@ -1,12 +1,34 @@
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { BatchesIcon as MembersIcon, HomeIcon, LogoutIcon, RoomsIcon } from "./assets/Icons";
+
 import Login from "./components/Login";
 import Rooms from "./components/Rooms";
-import "./App.css"
 import Members from "./components/Members";
 
-const refreshTimeout = 10 * 60 * 1000; // 10 minutes
+import TokenContext from "./assets/TokenContext";
+import "./App.css"
+
 const refreshUrl = 'http://127.0.0.1:8000/token/refresh';
+
+function useInterval(callback: any, delay: number) {
+  const savedCallback = useRef<any>();
+
+  useEffect(() => {
+    savedCallback.current = callback;
+  }, [callback]);
+
+  useEffect(() => {
+    function tick() {
+      if (savedCallback.current) {
+        savedCallback.current();
+      }
+    }
+    if (delay !== null) {
+      let id = setInterval(tick, delay);
+      return () => clearInterval(id);
+    }
+  }, [delay]);
+}
 
 function Hero() {
   return (
@@ -21,43 +43,42 @@ function Hero() {
 
 function App() {
   const [app, changeApp] = useState('/login');
-  const [refreshCount, setRefreshCount] = useState(0);
+  const [token, setToken] = useState('');
   
-  const onLogin = () => {
+  const onLogin = (newToken: string) => {
+    setToken(newToken);
     changeApp('/home');
-
-    const id = setTimeout(refreshToken, refreshTimeout);
-    setRefreshCount(id);
   }
   
-  const logout = () => {
-      document.cookie = `token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+  const onLogout = () => {
+      setToken('');
       changeApp('/login');
-      clearInterval(refreshCount);
-      setRefreshCount(0);
   }
   
-  const refreshToken = async () => {
-    const token = document.cookie.split('=')[1];
-    const response = await fetch(refreshUrl, {
+  useInterval(() => {
+    if (token.length === 0) return;
+    fetch(refreshUrl, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
+    })
+    .then(response => {
+      if (response.ok) {
+        return response.json();
+      } else if (response.status == 401) {
+        onLogout();
+      } 
+      else {
+        throw response.json();
+      }
+    })
+    .then((data: any) => {
+      setToken(data.access_token);
+    })
+    .catch(error => {
+      console.error("Error:", error);
     });
-
-    if (response.ok) {
-      const result = await response.json();
-      document.cookie = `token=${result.access_token}`;
-      
-      const id = setTimeout(refreshToken, refreshTimeout);
-      setRefreshCount(id);
-    } else if (response.status == 401) {
-      logout();
-    } else {
-      const error = await response.json();
-      console.error("Error:", error)
-    }
-  }
+  }, 10 * 60 * 1000); // 10 minutes
   
   if (app == '/login') {
     return <Login onLogin={onLogin}/>
@@ -69,31 +90,33 @@ function App() {
         content = <Hero/>
         break;
       case '/rooms':
-        content = <Rooms reLogin={logout}/>
+        content = <Rooms reLogin={onLogout}/>
         break;
       case '/members':
-        content = <Members reLogin={logout}/>
+        content = <Members reLogin={onLogout}/>
         break;
     }
     
     return (
-      <div className="container">
-        <nav className="navbar"></nav>
-        <nav className="navbar fixed">
-          <ul>
-            <li onClick={_ => changeApp('/home')}><a><HomeIcon/> Home</a></li>
-            <li onClick={_ => changeApp('/rooms')}><a><RoomsIcon/> Rooms</a></li>
-            <li onClick={_ => changeApp('/members')}><a><MembersIcon/> Members</a></li>
-          </ul>
-          
-          <ul>
-            <li onClick={logout}><a><LogoutIcon/> Logout</a></li>
-          </ul>
-        </nav>
-        <main className="content">
-          {content}
-        </main>
-      </div>
+      <TokenContext.Provider value={token}>
+        <div className="container">
+          <nav className="navbar"></nav>
+          <nav className="navbar fixed">
+            <ul>
+              <li onClick={_ => changeApp('/home')}><a><HomeIcon/> Home</a></li>
+              <li onClick={_ => changeApp('/rooms')}><a><RoomsIcon/> Rooms</a></li>
+              <li onClick={_ => changeApp('/members')}><a><MembersIcon/> Members</a></li>
+            </ul>
+            
+            <ul>
+              <li onClick={onLogout}><a><LogoutIcon/> Logout</a></li>
+            </ul>
+          </nav>
+          <main className="content">
+            {content}
+          </main>
+        </div>
+      </TokenContext.Provider>
     )
   }
 }

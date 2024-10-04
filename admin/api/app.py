@@ -123,6 +123,7 @@ async def add_rooms(body: RoomData, verified: bool = Depends(verify_access)):
         body.update({"_id": body["id"]})
         body.pop("id")
         body["password"] = hash_password(body["password"])
+        body["session_id"] = None
         result = await db.rooms.insert_one(body)
         return JSONResponse(content={"message": "Data created successfully"}, status_code=201)
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:

@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import SessionList from './Session/SessionList';
 import SessionCreate from './Session/SessionCreate';
+
+import TokenContext from '../assets/TokenContext';
 import "./Sessions.css"
 
 interface SessionType {
@@ -21,6 +23,7 @@ const addUrl = 'http://127.0.0.1:8001/sessions';
 function Sessions({reLogin}: {reLogin: () => void}) {
   // app state
   const [app, changeApp] = useState('/loading');
+  const token = useContext(TokenContext);
   
   // members data
   const [sessionData, setSessionData] = useState<SessionType | null>(null);
@@ -29,8 +32,6 @@ function Sessions({reLogin}: {reLogin: () => void}) {
   
   const refreshSessions = () => {
     const fetchSessions = async () => {
-      const token = document.cookie.split('=')[1];
-      console.log(token)
       const response = await fetch(fetchUrl, {
           headers: {
               'Authorization': `Bearer ${token}`,
@@ -60,7 +61,6 @@ function Sessions({reLogin}: {reLogin: () => void}) {
       return;      
     }
     
-    const token = document.cookie.split('=')[1];
     const response = await fetch(addUrl, {
         method: 'POST',
         headers: {
@@ -85,7 +85,6 @@ function Sessions({reLogin}: {reLogin: () => void}) {
   }
   
   const handleCreate = async () => {
-    const token = document.cookie.split('=')[1];
     const response = await fetch(memberUrl, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -105,7 +104,6 @@ function Sessions({reLogin}: {reLogin: () => void}) {
   }
 
   const handleViewRequest = async (_id: string) => {
-    const token = document.cookie.split('=')[1];
     const response = await fetch(fetchUrl + `/${_id}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -125,7 +123,6 @@ function Sessions({reLogin}: {reLogin: () => void}) {
   }
   
   const handleDelete = async (_id: string) => {
-    const token = document.cookie.split('=')[1];
     const response = await fetch(fetchUrl + `/${_id}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
