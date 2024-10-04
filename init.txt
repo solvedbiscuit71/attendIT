@@ -1,0 +1,48 @@
+How to setup mongodb for attendIT?
+
+> use attendIt
+
+> db.createCollection('rooms')
+> db.createCollection('members')
+> db.createCollection('sessions')
+> db.createCollection('members_sessions')
+
+Interface rooms {
+    _id: string;
+    password: string;
+    ongoing_session_id: ObjectId | null = null;
+    additional_info: { ... };
+}
+
+Interface members {
+    _id: string;
+    name: string;
+    password: string;
+    ongoing_session_id: ObjectId | null = null;
+    additional_info: { ... };
+}
+
+Interface sessions {
+    _id: ObjectId;
+    room_id: string; foreign key rooms._id
+    timestamp: ISODate;
+    ongoing: boolean = true;
+    additional_info: { ... };
+    Index(room_id, timestamp, {unique: true})
+}
+
+Interface members_sessions {
+    _id: ObjectId;
+    session_id: ObjectId;
+    member_id: string;
+    attendance: {
+        entry: boolean = false;
+        exit: boolean = false;
+        checkpoints: { ... };
+    }
+    Index(session_id, member_id, {unique: true})
+}
+
+> db.sessions.createIndex({room_id: 1, timestamp: 1}, {unique: true})
+> db.members_sessions.createIndex({session_id: 1, member_id: 1}, {unique: true})
+

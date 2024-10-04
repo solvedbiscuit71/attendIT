@@ -1,13 +1,13 @@
 function RoomView({ data, onBack, onDelete }: { data: any, onBack: () => void, onDelete: (_id: string) => void }) {
   return (
     <div className="room-create">
-      <div className="room-name">
-        <label htmlFor="roomid">Name</label>
-        <input type="text" id='room-id' value={data._id} readOnly />
+      <div className="room-field">
+        <label>Name : </label>
+        <input type="text" value={data._id} readOnly />
       </div>
-      <div className="room-name">
-        <label htmlFor="roomid">Ongoing Session?</label>
-        <input type="text" id='room-id' value={data.ongoing_session ? "Yes" : "No"} readOnly />
+      <div className="room-field room-ongoing">
+        <label>Ongoing Session Id :</label>
+        <input type="text" value={data.ongoing_session_id || "None"} readOnly />
       </div>
 
       <h2>Additional Info</h2>
@@ -21,7 +21,7 @@ function RoomView({ data, onBack, onDelete }: { data: any, onBack: () => void, o
       </ul>
 
       <button onClick={onBack}>Back</button>
-      <button className="red-button" onClick={_ => onDelete(data._id)}>Delete</button>
+      <button className="red-button" disabled={data.ongoing_session_id !== null} onClick={() => onDelete(data._id)}>Delete</button>
     </div>
   )
 }

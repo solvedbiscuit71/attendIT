@@ -1,14 +1,10 @@
 import { useState, useRef } from "react";
+import { MemberType } from "../Sessions";
 
-interface Members {
-  _id: string;
-  name: string;
-  selected: boolean;
-};
 
-function SessionCreate({onSubmit, membersData}: {onSubmit: (data: any) => void, membersData: Members[]}) {
+function SessionCreate({onSubmit, membersData}: {onSubmit: (data: any) => void, membersData: MemberType[]}) {
   const [fields, setFields] = useState<any>({});
-  const [members, setMembers] = useState<Members[]>(membersData);
+  const [members, setMembers] = useState<MemberType[]>(membersData);
   const formRef = useRef<HTMLFormElement>(null);
   
   const addField = (event: React.FormEvent) => {
@@ -37,18 +33,14 @@ function SessionCreate({onSubmit, membersData}: {onSubmit: (data: any) => void, 
   const handleSubmit = () => {
     const data = {
       additional_info: fields,
-      members: members.filter(member => member.selected).map(member => {
-        return {
-          _id: member._id
-        }
-      })
+      member_ids: members.filter(member => member.selected).map(member => member._id)
     }
     onSubmit(data)
   }
   
   const handleCheck = (_id: string) => {
     setMembers(members.map(member => {
-      if (member._id == _id) {
+      if (member._id == _id && member.ongoing_session_id === null) {
         member.selected = member.selected ? false : true;
       }
       return member;
@@ -65,7 +57,7 @@ function SessionCreate({onSubmit, membersData}: {onSubmit: (data: any) => void, 
             {members.map(member => 
             <li key={member._id}>
             <div className="member">
-              <input type="checkbox" onClick={() => handleCheck(member._id)} />
+              <input type="checkbox" onClick={() => handleCheck(member._id)} disabled={member.ongoing_session_id !== null} />
               <div>
                 <div>{member._id}</div>
                 <div>{member.name}</div>

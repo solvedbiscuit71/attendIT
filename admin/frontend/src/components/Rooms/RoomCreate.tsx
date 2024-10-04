@@ -42,13 +42,13 @@ function RoomCreate({onSubmit}: {onSubmit: (data: any) => void}) {
 
   return (
     <div className="room-create">
-      <div className="room-name">
-        <label htmlFor="roomid">Name</label>
-        <input type="text" id='room-id' value={name.toUpperCase()} onChange={(e) => setName(e.target.value)} />
+      <div className="room-field">
+        <label htmlFor="room-create-name">Name : </label>
+        <input type="text" id="room-create-name" value={name.toUpperCase()} onChange={(e) => setName(e.target.value)} />
       </div>
-      <div className="room-passwd">
-        <label htmlFor="room-passwd">Password</label>
-        <input type="password" id='room-passwd' value={passwd} onChange={(e) => setPasswd(e.target.value)} />
+      <div className="room-field">
+        <label htmlFor="room-create-pwd">Password : </label>
+        <input type="password" id="room-create-pwd" value={passwd} onChange={(e) => setPasswd(e.target.value)} />
       </div>
 
       

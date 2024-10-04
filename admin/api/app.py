@@ -40,15 +40,16 @@ class LoginRequest(BaseModel):
 class RoomData(BaseModel):
     id: str = Field(alias='_id')
     password: str
+    ongoing_session_id: str | None = None
     additional_info: dict = {}
 
 class MemberData(BaseModel):
     id: str = Field(alias='_id')
     name: str
     password: str
+    ongoing_session_id: str | None = None
     additional_info: dict = {}
     
-
 
 CORRECT_USERNAME = getenv("CORRECT_USERNAME")
 CORRECT_PASSWORD = hash_password(getenv("CORRECT_PASSWORD"))
@@ -93,8 +94,8 @@ async def get_rooms_info(_id: str, verified: bool = Depends(verify_access)):
         room = await db.rooms.find_one({"_id": _id}, {"password": False})
         if room is None:
             return JSONResponse(content={"message": "Record with _id does not exists"}, status_code=404)
-        room["ongoing_session"] = room["session_id"] is not None
-        room.pop("session_id")
+        if room["ongoing_session_id"] is not None:
+            room["ongoing_session_id"] = str(room["ongoing_session_id"])
         return room
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)
@@ -123,7 +124,6 @@ async def add_rooms(body: RoomData, verified: bool = Depends(verify_access)):
         body.update({"_id": body["id"]})
         body.pop("id")
         body["password"] = hash_password(body["password"])
-        body["session_id"] = None
         result = await db.rooms.insert_one(body)
         return JSONResponse(content={"message": "Data created successfully"}, status_code=201)
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
@@ -149,6 +149,8 @@ async def get_members_info(_id: str, verified: bool = Depends(verify_access)):
         member = await db.members.find_one({"_id": _id}, {"password": False})
         if member is None:
             return JSONResponse(content={"message": "Record with _id does not exists"}, status_code=404)
+        if member["ongoing_session_id"] is not None:
+            member["ongoing_session_id"] = str(member["ongoing_session_id"])
         return member
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)
@@ -177,7 +179,6 @@ async def add_batches(body: MemberData, verified: bool = Depends(verify_access))
         body.update({"_id": body["id"]})
         body.pop("id")
         body["password"] = hash_password(body["password"])
-        
         result = await db.members.insert_one(body)
         return JSONResponse(content={"message": "Data created successfully"}, status_code=201)
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:

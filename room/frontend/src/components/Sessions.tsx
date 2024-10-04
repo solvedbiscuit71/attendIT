@@ -6,13 +6,15 @@ import TokenContext from '../assets/TokenContext';
 import "./Sessions.css"
 
 interface SessionType {
-  onGoing: { timestamp: string; } | null;
-  history: { timestamp: string; }[]
+  onGoing: { _id: string; timestamp: string; } | null;
+  history: {  _id: string; timestamp: string; }[]
 };
 
-interface Members {
+interface MemberType {
   _id: string;
   name: string;
+  ongoing_session_id: string | null;
+
   selected: boolean;
 };
 
@@ -27,7 +29,7 @@ function Sessions({reLogin}: {reLogin: () => void}) {
   
   // members data
   const [sessionData, setSessionData] = useState<SessionType | null>(null);
-  const [memberData, setMemberData] = useState<Members[] | null>(null);
+  const [memberData, setMemberData] = useState<MemberType[] | null>(null);
   const [viewData, setViewData] = useState(null);
   
   const refreshSessions = () => {
@@ -166,4 +168,5 @@ function Sessions({reLogin}: {reLogin: () => void}) {
   );
 };
 
+export type { SessionType, MemberType };
 export default Sessions;

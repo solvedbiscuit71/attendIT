@@ -2,13 +2,18 @@ function MemberView({ data, onBack, onDelete }: { data: any, onBack: () => void,
   return (
     <div className="member-view">
       <div className="member-field member-id">
-        <label htmlFor="member-id">ID</label>
-        <input type="text" id='member-id' value={data._id} readOnly/>
+        <label>ID : </label>
+        <input type="text" value={data._id} readOnly/>
       </div>
 
-      <div className="member-field member-name">
-        <label htmlFor="member-name">Name</label>
-        <input type="text" id='member-name' value={data.name} readOnly/>
+      <div className="member-field">
+        <label>Name : </label>
+        <input type="text" value={data.name} readOnly/>
+      </div>
+
+      <div className="member-field member-ongoing">
+        <label>Ongoing Session Id : </label>
+        <input type="text" value={data.ongoing_session_id || "None"} readOnly/>
       </div>
       
       <h2>Additional Info</h2>
@@ -22,7 +27,7 @@ function MemberView({ data, onBack, onDelete }: { data: any, onBack: () => void,
       </ul>
       
       <button className="button" onClick={onBack}>Back</button>
-      <button className="button red" onClick={_ => onDelete(data._id)}>Delete</button>
+      <button className="button red" onClick={_ => onDelete(data._id)} disabled={data.ongoing_session_id !== null}>Delete</button>
     </div>
   )
 }

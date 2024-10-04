@@ -45,16 +45,16 @@ function MemberCreate({onSubmit}: {onSubmit: (data: any) => void}) {
   return (
     <div className="member-create">
       <div className="member-field">
-        <label htmlFor="member-id">ID</label>
-        <input type="text" id='member-id' value={id.toUpperCase()} onChange={(e) => setId(e.target.value)} />
+        <label htmlFor="member-create-id">ID : </label>
+        <input type="text" id='member-create-id' value={id.toUpperCase()} onChange={(e) => setId(e.target.value)} />
       </div>
       <div className="member-field">
-        <label htmlFor="member-name">Name</label>
-        <input type="text" id='member-name' value={name} onChange={(e) => setName(e.target.value)} />
+        <label htmlFor="member-create-name">Name : </label>
+        <input type="text" id='member-create-name' value={name} onChange={(e) => setName(e.target.value)} />
       </div>
       <div className="member-field">
-        <label htmlFor="member-passwd">Password</label>
-        <input type="password" id='member-passwd' value={passwd} onChange={(e) => setPasswd(e.target.value)} />
+        <label htmlFor="member-create-pwd">Password : </label>
+        <input type="password" id='member-create-pwd' value={passwd} onChange={(e) => setPasswd(e.target.value)} />
       </div>
 
       
