@@ -20,7 +20,7 @@ function Login({onLogin: LoggedIn}: Props) {
       }
       
       const body = {
-        username: formData.username.value,
+        username: formData.username.value.toUpperCase(),
         password: formData.password.value
       }
       formRef.current.reset()
@@ -59,7 +59,7 @@ function Login({onLogin: LoggedIn}: Props) {
           <h2>Login</h2>
           <form onSubmit={handleLogin} ref={formRef}>
             <label htmlFor="username">Username</label>
-            <input type="text" id="username" name="username" required />
+            <input type="text" id="username" name="username" onChange={(e) => {e.target.value = e.target.value.toUpperCase()}} required />
 
             <label htmlFor="password">Password</label>
             <input type="password" id="password" name="password" required />

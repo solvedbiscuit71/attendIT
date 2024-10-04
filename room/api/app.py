@@ -48,7 +48,7 @@ async def login(request: LoginRequest):
     try:
         room = await db.rooms.find_one({"_id": request.username}, {"password": True})
         if room is None:
-            return JSONResponse(content={"message": "Record with _id does not exists"}, status_code=404)
+            return JSONResponse(content={"message": "Room with _id does not exists"}, status_code=404)
         if verify_password(request.password, room["password"]):
             access_token = create_access_token(data={"sub": request.username})
             return {"access_token": access_token, "token_type": "bearer"}
@@ -137,11 +137,12 @@ def remove_session_id(body):
 @app.get("/sessions/{session_id}")
 async def get_sessions_info(session_id: str, room_id: str = Depends(verify_access)):
     try:
-        session = await db.sessions.find_one({"_id": ObjectId(session_id), "room_id": room_id})
+        session_id = ObjectId(session_id)
+        session = await db.sessions.find_one({"_id": session_id, "room_id": room_id})
         if session is None:
-            return JSONResponse(content={"message": "Record with _id does not exists"}, status_code=404)
+            return JSONResponse(content={"message": "Session with _id does not exists"}, status_code=404)
 
-        attendees = await db.members_sessions.find({"session_id": ObjectId(session_id)}, {"_id": False, "session_id": True, "member_id": True, "attendance": True}).to_list(length=None)
+        attendees = await db.members_sessions.find({"session_id": session_id}, {"_id": False, "session_id": True, "member_id": True, "attendance": True}).to_list(length=None)
 
         session["session_id"] = str(session["_id"])
         session.pop("_id")
@@ -153,23 +154,39 @@ async def get_sessions_info(session_id: str, room_id: str = Depends(verify_acces
 @app.patch("/sessions/{session_id}/end")
 async def end_session(session_id: str, room_id: str = Depends(verify_access)):
     try:
-        # TODO: when session ended, update rooms, members, sessions documents.
-        pass
+        session_id = ObjectId(session_id)
+        session = await db.sessions.find_one({"_id": session_id, "room_id": room_id}, {"ongoing": True})
+        if not session["ongoing"]:
+            return JSONResponse(content={"message": "Session Already Ended."}, status_code=400)
+
+        members_sessions = await db.members_sessions.find({"session_id": session_id}, {"_id": False, "member_id": True}).to_list(length=None)
+        member_ids = list(map(lambda x: x["member_id"], members_sessions))
+        
+        result = await db.rooms.update_one({"_id": room_id}, {"$set": {"ongoing_session_id": None}})
+        result = await db.members.update_many({"_id": {"$in": member_ids}}, {"$set": {"ongoing_session_id": None}})
+        result = await db.sessions.update_one({"_id": session_id}, {"$set": {"ongoing": False}})
+        return {"message": f"Successfully Ended Session {session_id}"}
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)
 
-@app.delete("/sessions/{_id}")
-async def delete_rooms(_id: str, verified: bool = Depends(verify_access)):
+@app.delete("/sessions/{session_id}")
+async def delete_session(session_id: str, room_id: str = Depends(verify_access)):
     try:
-        # TODO: to delete a session, delete the sessions document and relevant documents in members_sessions
-        pass
-        # result = await db.rooms.delete_one({"_id": _id})
-        # if result.deleted_count == 1:
-        #     return {"message": f"Successfully deleted {_id}"}
-        # elif result.deleted_count == 0:
-        #     return JSONResponse(content={"message": "Record with _id does not exists"}, status_code=404)
-        # else:
-        #     raise ConnectionFailure
+        session_id = ObjectId(session_id)
+        session = await db.sessions.find_one({"_id": session_id, "room_id": room_id}, {"ongoing": True})
+        if session is None:
+            return JSONResponse(content={"message": "Session with _id does not exists"}, status_code=404)
+        if session["ongoing"]:
+            return JSONResponse(content={"message": "Cannot Delete Ongoing Session"}, status_code=400)
+
+        result = await db.sessions.delete_one({"_id": session_id})
+        if result.deleted_count == 1:
+            result = await db.members_sessions.delete_many({"session_id": session_id})
+            return {"message": f"Successfully Deleted Session {session_id}"}
+        elif result.deleted_count == 0:
+            return JSONResponse(content={"message": "Session with _id does not exists"}, status_code=404)
+        else:
+            raise ConnectionFailure
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)
 
