@@ -1,15 +1,37 @@
-function MemberView({ data, onBack, onDelete }: { data: any, onBack: () => void, onDelete: (_id: string) => void }) {
+import { SessionViewType } from "../Sessions";
+
+function SessionView({ data, onBack, onSecondary }: { data: SessionViewType, onBack: () => void, onSecondary: (_id: string, ongoing: boolean) => void }) {
   return (
-    <div className="member-view">
-      <div className="member-field member-id">
-        <label htmlFor="member-id">ID</label>
-        <input type="text" id='member-id' value={data._id} readOnly/>
+    <div className="session-view">
+      <div className="session-field session-id">
+        <label>Session Id : </label>
+        <input type="text" value={data.session_id} readOnly/>
       </div>
 
-      <div className="member-field member-name">
-        <label htmlFor="member-name">Name</label>
-        <input type="text" id='member-name' value={data.name} readOnly/>
+      <div className="session-field">
+        <label>Timestamp : </label>
+        <input type="text" value={data.timestamp} readOnly/>
       </div>
+      
+      <h2>Attendees</h2>
+      
+      <table className="session-table">
+        <thead>
+          <tr><td>Member Id</td><td>Entry</td><td>Exit</td></tr>
+        </thead>
+        
+        <tbody>
+          {data.attendees.map(attendee => {
+            return (
+              <tr key={attendee.member_id}>
+                <td>{attendee.member_id}</td>
+                <td>{attendee.attendance.entry ? "Present" : "Absent"}</td>
+                <td>{attendee.attendance.exit ? "Present" : "Absent"}</td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
       
       <h2>Additional Info</h2>
       
@@ -22,9 +44,9 @@ function MemberView({ data, onBack, onDelete }: { data: any, onBack: () => void,
       </ul>
       
       <button className="button" onClick={onBack}>Back</button>
-      <button className="button red" onClick={_ => onDelete(data._id)}>Delete</button>
+      <button className="button red" onClick={_ => onSecondary(data.session_id, data.ongoing)}>{data.ongoing ? "End" : "Delete"}</button>
     </div>
   )
 }
 
-export default MemberView;
+export default SessionView;

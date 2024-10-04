@@ -70,30 +70,36 @@
     padding: 20px 0;
 }
 
-.session-view .session-field, .session-create .session-field {
+.session-field {
     margin-block: 20px;
 }
 
-.session-view .session-field label, .session-create .session-field label {
+.session-field label {
   margin-right: 10px;
   font-size: 1rem;
   text-align: left;
 }
 
-.session-view .session-field input, .session-create .session-field input {
+.session-field input {
   padding: 5px;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
 
+.session-field.session-id input {
+  min-width: 200px;
+}
+
 .session-view h2 {
+  margin: 20px 0;
+
   font-size: 1.2rem;
   text-decoration: underline;
 }
 
 .session-view ul, .session-create ul {
   list-style-type: none;
-  padding: 20px 0;
+  padding: 0 0 20px;
 }
 
 .session-view ul span, .session-create ul span {
@@ -115,6 +121,24 @@
 
 .session-view > button:last-of-type, .session-create > button:last-of-type {
   margin-left: 10px;
+}
+
+.session-table {
+  border-collapse: collapse;
+}
+
+.session-table thead {
+  background-color: #bcbcbc;
+}
+
+.session-table thead td {
+  font-weight: bold;
+}
+
+.session-table td {
+  text-align: center;
+  padding: 10px 20px;
+  border: 1px solid black;
 }
 
 .session-create {

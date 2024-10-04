@@ -4,10 +4,29 @@ import SessionCreate from './Session/SessionCreate';
 
 import TokenContext from '../assets/TokenContext';
 import "./Sessions.css"
+import SessionView from './Session/SessionView';
 
-interface SessionType {
+interface SessionListType {
   onGoing: { _id: string; timestamp: string; } | null;
   history: {  _id: string; timestamp: string; }[]
+};
+
+interface AttendeesType {
+  member_id: string;
+  attendance: {
+    entry: boolean;
+    exit: boolean;
+    checkpoints: any[];
+  }
+};
+
+interface SessionViewType {
+  room_id: string;
+  session_id: string;
+  timestamp: string;
+  ongoing: boolean;
+  attendees: AttendeesType[];
+  additional_info: any;
 };
 
 interface MemberType {
@@ -28,7 +47,7 @@ function Sessions({reLogin}: {reLogin: () => void}) {
   const token = useContext(TokenContext);
   
   // members data
-  const [sessionData, setSessionData] = useState<SessionType | null>(null);
+  const [sessionData, setSessionData] = useState<SessionListType | null>(null);
   const [memberData, setMemberData] = useState<MemberType[] | null>(null);
   const [viewData, setViewData] = useState(null);
   
@@ -124,12 +143,13 @@ function Sessions({reLogin}: {reLogin: () => void}) {
     }
   }
   
-  const handleDelete = async (_id: string) => {
-    const response = await fetch(fetchUrl + `/${_id}`, {
+  const handleSecondary = async (_id: string, ongoing: boolean) => {
+    const url = ongoing ? fetchUrl + `/${_id}/end` : fetchUrl + `/${_id}`
+    const response = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
-      method: "DELETE",
+      method: ongoing ? "PATCH" : "DELETE",
     })
     
     if (response.ok) {
@@ -141,7 +161,6 @@ function Sessions({reLogin}: {reLogin: () => void}) {
       const error = await response.json();
       console.error("Error:", error);
     }
-    
   }
   
   let content;
@@ -151,13 +170,16 @@ function Sessions({reLogin}: {reLogin: () => void}) {
         break;
       case '/list':
         if (sessionData)
-          content = <SessionList sessions={sessionData} onCreate={handleCreate} onView={() => {}} />
+          content = <SessionList sessions={sessionData} onCreate={handleCreate} onView={handleViewRequest} />
         break;
       case '/create':
         if (memberData)
           content = <SessionCreate onSubmit={handleSubmit} membersData={memberData} />
         break;
       case '/view':
+        if (viewData)
+          content = <SessionView data={viewData} onBack={() => changeApp("/list")} onSecondary={handleSecondary} />
+        break;
     }
   
   return (
@@ -168,5 +190,5 @@ function Sessions({reLogin}: {reLogin: () => void}) {
   );
 };
 
-export type { SessionType, MemberType };
+export type { SessionListType, SessionViewType, AttendeesType, MemberType };
 export default Sessions;
