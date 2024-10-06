@@ -28,7 +28,6 @@ interface SessionViewType {
   session_id: string;
   session_url: string;
   timestamp: string;
-  entry_expires_at: string;
   ongoing: boolean;
   checkpoints: CheckpointType[];
   attendees: AttendeesType[];

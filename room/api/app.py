@@ -1,14 +1,15 @@
-from utils import hash_password, verify_password, create_access_token, verify_access_token
+from bson import ObjectId
+from collections import namedtuple
+from datetime import datetime, timedelta
 from fastapi import FastAPI, HTTPException, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer
-from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
-from pymongo.errors import ServerSelectionTimeoutError, ConnectionFailure, DuplicateKeyError
-from bson import ObjectId
-from pydantic import BaseModel, Field
-from datetime import datetime, timedelta
 from os import getenv
+from pydantic import BaseModel, Field
+from pymongo.errors import ServerSelectionTimeoutError, ConnectionFailure, DuplicateKeyError
+from utils import hash_password, verify_password, create_access_token, verify_access_token
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
 
@@ -48,6 +49,10 @@ class SessionData(BaseModel):
 class CheckpointData(BaseModel):
     name: str
     expires_at: int
+    
+class MemberLoginRequest(BaseModel):
+    member_id: str
+    password: str
 
 @app.post("/login")
 async def login(request: LoginRequest):
@@ -117,7 +122,6 @@ async def add_sessions(body: SessionData, room_id: str = Depends(verify_access))
         session = {
             "room_id": room_id,
             "timestamp": timestamp,
-            "entry_expires_at": timestamp + timedelta(minutes=body.expires_at),
             "ongoing": True,
             "additional_info": body.additional_info
         }
@@ -136,6 +140,13 @@ async def add_sessions(body: SessionData, room_id: str = Depends(verify_access))
                 "checkpoint_ids": []
             })
         result = await db.members_sessions.insert_many(members_sessions)
+        
+        entry_checkpoint = {
+            "session_id": session_id,
+            "name": "Entry",
+            "expires_at": timestamp + timedelta(minutes=body.expires_at),
+        }
+        result = await db.sessions_checkpoints.insert_one(entry_checkpoint)
 
         return JSONResponse(content={"message": "Data created successfully"}, status_code=201)
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
@@ -157,7 +168,6 @@ async def get_sessions_info(session_id: str, room_id: str = Depends(verify_acces
         session_url: string;
         room_id: string;
         timestamp: string;
-        entry_expires_at: string;
         checkpoints: {
             name: string;
             expires_at: string;
@@ -266,3 +276,29 @@ async def get_members(verified: bool = Depends(verify_access)):
         return members
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)
+    
+@app.post("/sessions/{session_id}/login")
+async def login_member(request: MemberLoginRequest, session_id: str):
+    try:
+        member = await db.members.find_one({"_id": request.member_id}, {"password": True})
+        if member is None:
+            return JSONResponse(content={"message": f"Invalid username or password"}, status_code=404)
+        if not verify_password(request.password, member["password"]):
+            return JSONResponse(content={"message": f"Invalid username or password"}, status_code=401)
+        count = await db.members_sessions.count_documents({"member_id": request.member_id, "session_id": ObjectId(session_id)})
+        if count == 0:
+            return JSONResponse(content={"message": f"Access denied to session"}, status_code=401)
+
+        access_token = create_access_token(data={"member_id": request.member_id, "session_id": session_id})
+        return {"access_token": access_token, "token_type": "bearer"}
+    except (ServerSelectionTimeoutError, ConnectionFailure) as e:
+        return JSONResponse(content={"message": "Database Failure"}, status_code=500)
+
+member_session_tuple = namedtuple('MemberSessionTuple', ['member_id', 'session_id'])
+
+async def verify_member_access(token: str = Depends(oauth2_scheme)) -> str:
+    token_data = verify_access_token(token)
+    try:
+        return member_session_tuple(token_data['member_id'], token_data['session_id'])
+    except KeyError:
+        raise HTTPException(status_code=401, detail="Invalid token")

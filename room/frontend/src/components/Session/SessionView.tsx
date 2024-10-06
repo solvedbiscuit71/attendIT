@@ -45,7 +45,7 @@ function SessionView({ data, onBack, onSecondary, onCheckpoint }: Props) {
         <input type="text" value={data.timestamp} readOnly/>
       </div>
       
-      <QRCodeSVG value={data.session_url} className="qr-code" />
+      { data.ongoing && <QRCodeSVG value={data.session_url} className="qr-code" /> }
 
       <h2>Additional Info</h2>
       
@@ -64,10 +64,6 @@ function SessionView({ data, onBack, onSecondary, onCheckpoint }: Props) {
           <thead>
             <tr>
               <td>Member Id</td>
-              <td>
-                <div>Entry</div>
-                <div>{data.entry_expires_at}</div>
-              </td>
               {
                 data.checkpoints.map(checkpoint => {
                   return (
@@ -86,7 +82,6 @@ function SessionView({ data, onBack, onSecondary, onCheckpoint }: Props) {
               return (
                 <tr key={attendee.member_id}>
                   <td>{attendee.member_id}</td>
-                  <td>{attendee.entry ? "Present" : "Absent"}</td>
                   {
                     data.checkpoints.map((checkpoint) => {
                       return (
