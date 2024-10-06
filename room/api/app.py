@@ -118,7 +118,7 @@ async def add_sessions(body: SessionData, room_id: str = Depends(verify_access))
         if member_count != len(body.member_ids):
             return JSONResponse(content={"message": "Invalid member ids"}, status_code=400)
 
-        timestamp = datetime.utcnow().replace(microsecond=0)
+        timestamp = datetime.now().replace(microsecond=0)
         session = {
             "room_id": room_id,
             "timestamp": timestamp,
@@ -136,7 +136,6 @@ async def add_sessions(body: SessionData, room_id: str = Depends(verify_access))
             members_sessions.append({
                 "session_id": session_id,
                 "member_id": member_id,
-                "entry": False,
                 "checkpoint_ids": []
             })
         result = await db.members_sessions.insert_many(members_sessions)
@@ -225,7 +224,7 @@ async def add_checkpoint(body: CheckpointData, session_id: str, room_id: str = D
         if not session["ongoing"]:
             return JSONResponse(content={"message": "Session Already Ended."}, status_code=400)
         
-        timestamp = datetime.utcnow().replace(microsecond=0)
+        timestamp = datetime.now().replace(microsecond=0)
         checkpoint = {
             "session_id": session_id,
             "name": body.name,
@@ -280,7 +279,7 @@ async def get_members(verified: bool = Depends(verify_access)):
 @app.post("/sessions/{session_id}/login")
 async def login_member(request: MemberLoginRequest, session_id: str):
     try:
-        member = await db.members.find_one({"_id": request.member_id}, {"password": True})
+        member = await db.members.find_one({"_id": request.member_id})
         if member is None:
             return JSONResponse(content={"message": f"Invalid username or password"}, status_code=404)
         if not verify_password(request.password, member["password"]):
@@ -289,16 +288,37 @@ async def login_member(request: MemberLoginRequest, session_id: str):
         if count == 0:
             return JSONResponse(content={"message": f"Access denied to session"}, status_code=401)
 
-        access_token = create_access_token(data={"member_id": request.member_id, "session_id": session_id})
-        return {"access_token": access_token, "token_type": "bearer"}
+        member = remove_keys(member, ['password', 'ongoing_session_id'])
+        access_token = create_access_token(data={"member_id": request.member_id, "session_id": session_id}, expires_delta=timedelta(days=1))
+        return {"access_token": access_token, "token_type": "bearer", "member_info": member}
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)
 
 member_session_tuple = namedtuple('MemberSessionTuple', ['member_id', 'session_id'])
 
-async def verify_member_access(token: str = Depends(oauth2_scheme)) -> str:
+async def verify_member_access(token: str = Depends(oauth2_scheme)) -> member_session_tuple:
     token_data = verify_access_token(token)
     try:
         return member_session_tuple(token_data['member_id'], token_data['session_id'])
     except KeyError:
         raise HTTPException(status_code=401, detail="Invalid token")
+    
+@app.get("/sessions/{session_id}/member_checkpoints")
+async def get_member_checkpoints(session_id: str, member_session: member_session_tuple = Depends(verify_member_access)):
+    def update_checkpoint(checkpoints, completed):
+        for checkpoint in checkpoints:
+            checkpoint['completed'] = checkpoint['name'] in completed
+            checkpoint.pop('session_id')
+        return checkpoints
+
+    if session_id != member_session.session_id:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    member_id = member_session.member_id
+    try:
+        member = await db.members_sessions.find_one({"session_id": ObjectId(session_id),"member_id": member_id}, {"_id": False, "checkpoint_ids": True})
+        checkpoints = await db.sessions_checkpoints.find({"session_id": ObjectId(session_id)}, {"_id": False}).to_list(length=None)
+        return {"checkpoints": update_checkpoint(checkpoints, set(member['checkpoint_ids']))}
+        
+    except (ServerSelectionTimeoutError, ConnectionFailure) as e:
+        return JSONResponse(content={"message": "Database Failure"}, status_code=500)

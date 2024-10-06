@@ -27,7 +27,6 @@ Interface sessions {
     _id: ObjectId;
     room_id: string; foreign key rooms._id
     timestamp: ISODate;
-    entry_expires_at: ISODate;
     ongoing: boolean = true;
     additional_info: { ... };
 
@@ -39,7 +38,6 @@ Interface members_sessions {
     _id: ObjectId;
     session_id: ObjectId;
     member_id: string;
-    entry: boolean = false; // If entry = true, member has entered the session
     checkpoint_ids: string[] = [...];
 
     Index(session_id, member_id, {unique: true})
