@@ -100,7 +100,6 @@ function App() {
     return (
       <TokenContext.Provider value={token}>
         <div className="container">
-          <nav className="navbar"></nav>
           <nav className="navbar fixed">
             <ul>
               <li onClick={_ => changeApp('/home')}><a><HomeIcon/> Home</a></li>

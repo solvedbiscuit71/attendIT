@@ -55,9 +55,6 @@
 .sessions .list {
   list-style-type: none;
   padding: 0;
-
-  max-height: 50vh;
-  overflow-y: scroll;
 }
 
 .sessions .list li {
@@ -142,8 +139,7 @@
 }
 
 .session-table {
-  max-height: 70vh;
-  max-width: calc(100vw - 300px);
+  max-width: calc(100vw - 280px);
   overflow: auto;
 }
 
@@ -181,9 +177,6 @@
   list-style-type: none;
   padding: 0px;
   margin: 20px 0;
-  
-  max-height: 50vh;
-  overflow-y: scroll;
 }
 
 .session-create ul.participants li {

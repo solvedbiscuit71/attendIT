@@ -1,5 +1,4 @@
 .container {
-  display: flex;
   width: 100vw;
 }
 
@@ -47,7 +46,14 @@
 
 .content {
   padding: 20px;
-  flex-grow: 1; /* Allows the content to take the remaining space */
+  margin-left: 200px;
+  max-height: 100vh;
+  
+  overflow: auto;
+}
+
+.content > div {
+  min-height: calc(100vh - 40px);
 }
 
 .hero h1 {

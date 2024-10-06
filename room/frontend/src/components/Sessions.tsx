@@ -139,7 +139,6 @@ function Sessions({reLogin}: {reLogin: () => void}) {
     
     if (response.ok) {
       const data = await response.json();
-      data["session_url"] = `${fetchUrl}/${data.session_id}`
       setViewData(data);
       changeApp("/view");
     } else if (response.status == 401) {

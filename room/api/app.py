@@ -25,6 +25,8 @@ origins = [
     "http://127.0.0.1:5174",
 ]
 
+ROOM_DOMAIN = getenv('ROOM_DOMAIN')
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -152,6 +154,7 @@ async def get_sessions_info(session_id: str, room_id: str = Depends(verify_acces
     """
     Returns {
         session_id: string;
+        session_url: string;
         room_id: string;
         timestamp: string;
         entry_expires_at: string;
@@ -178,6 +181,7 @@ async def get_sessions_info(session_id: str, room_id: str = Depends(verify_acces
         checkpoints = await db.sessions_checkpoints.find({"session_id": session_id}).to_list(length=None)
 
         session["session_id"] = str(session["_id"])
+        session["session_url"] = f"http://{ROOM_DOMAIN}/sessions/{session['session_id']}"
         session = remove_keys(session, ["_id"])
         session["attendees"] = list(map(lambda x: remove_keys(x, ["_id", "session_id"]), attendees))
         session["checkpoints"] = list(map(lambda x: remove_keys(x, ["_id", "session_id"]), checkpoints))

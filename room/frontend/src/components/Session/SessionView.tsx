@@ -45,7 +45,7 @@ function SessionView({ data, onBack, onSecondary, onCheckpoint }: Props) {
         <input type="text" value={data.timestamp} readOnly/>
       </div>
       
-      <QRCodeSVG value={data.session_url} />
+      <QRCodeSVG value={data.session_url} className="qr-code" />
 
       <h2>Additional Info</h2>
       
