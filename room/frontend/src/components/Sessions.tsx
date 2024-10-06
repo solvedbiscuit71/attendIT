@@ -3,8 +3,9 @@ import SessionList from './Session/SessionList';
 import SessionCreate from './Session/SessionCreate';
 
 import TokenContext from '../assets/TokenContext';
-import "./Sessions.css"
 import SessionView from './Session/SessionView';
+
+import "./Sessions.css"
 
 interface SessionListType {
   onGoing: { _id: string; timestamp: string; } | null;
@@ -25,6 +26,7 @@ interface CheckpointType {
 interface SessionViewType {
   room_id: string;
   session_id: string;
+  session_url: string;
   timestamp: string;
   entry_expires_at: string;
   ongoing: boolean;
@@ -137,6 +139,7 @@ function Sessions({reLogin}: {reLogin: () => void}) {
     
     if (response.ok) {
       const data = await response.json();
+      data["session_url"] = `${fetchUrl}/${data.session_id}`
       setViewData(data);
       changeApp("/view");
     } else if (response.status == 401) {

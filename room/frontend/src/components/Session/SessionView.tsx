@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { SessionViewType } from "../Sessions";
+import { QRCodeSVG } from "qrcode.react";
 
 interface Props {
   data: SessionViewType;
@@ -43,6 +44,8 @@ function SessionView({ data, onBack, onSecondary, onCheckpoint }: Props) {
         <label>Timestamp : </label>
         <input type="text" value={data.timestamp} readOnly/>
       </div>
+      
+      <QRCodeSVG value={data.session_url} />
 
       <h2>Additional Info</h2>
       
