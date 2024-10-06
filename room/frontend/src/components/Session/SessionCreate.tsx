@@ -6,6 +6,7 @@ function SessionCreate({onSubmit, membersData}: {onSubmit: (data: any) => void, 
   const [fields, setFields] = useState<any>({});
   const [members, setMembers] = useState<MemberType[]>(membersData);
   const formRef = useRef<HTMLFormElement>(null);
+  const selectRef = useRef<HTMLSelectElement>(null);
   
   const addField = (event: React.FormEvent) => {
     event.preventDefault();
@@ -31,11 +32,15 @@ function SessionCreate({onSubmit, membersData}: {onSubmit: (data: any) => void, 
   }
   
   const handleSubmit = () => {
-    const data = {
-      additional_info: fields,
-      member_ids: members.filter(member => member.selected).map(member => member._id)
+    const selectedMembers= members.filter(member => member.selected)
+    if (selectRef.current && selectedMembers.length > 0) {
+      const data = {
+        additional_info: fields,
+        member_ids: selectedMembers.map(member => member._id),
+        expires_at: +(selectRef.current.value)
+      }
+      onSubmit(data)
     }
-    onSubmit(data)
   }
   
   const handleCheck = (_id: string) => {
@@ -49,6 +54,16 @@ function SessionCreate({onSubmit, membersData}: {onSubmit: (data: any) => void, 
 
   return (
     <div className="session-create">
+      <div className="session-field">
+        <label htmlFor="session-cooldown">Entry Expires After : </label>
+        <select name="cooldown" id="session-cooldown" ref={selectRef}>
+          <option value="5">5 minutes</option>
+          <option value="10">10 minutes</option>
+          <option value="15">15 minutes</option>
+          <option value="30">30 minutes</option>
+        </select>
+      </div>
+
       <h2>Participants</h2>
       
       {
@@ -57,11 +72,11 @@ function SessionCreate({onSubmit, membersData}: {onSubmit: (data: any) => void, 
             {members.map(member => 
             <li key={member._id}>
             <div className="member">
-              <input type="checkbox" onClick={() => handleCheck(member._id)} disabled={member.ongoing_session_id !== null} />
-              <div>
+              <input id={`checkbox-${member._id}`} type="checkbox" onClick={() => handleCheck(member._id)} disabled={member.ongoing_session_id !== null} />
+              <label htmlFor={`checkbox-${member._id}`}>
                 <div>{member._id}</div>
                 <div>{member.name}</div>
-              </div>
+              </label>
             </div>
             </li>)}
           </ul>
@@ -72,7 +87,7 @@ function SessionCreate({onSubmit, membersData}: {onSubmit: (data: any) => void, 
       
       {
         Object.keys(fields).length > 0 &&
-        <ul>
+        <ul style={{marginTop: '20px'}}>
           {Object.keys(fields).map(key => <li key={key}><span>{key}</span> : "{fields[key]}"</li>)}
         </ul>
       }
@@ -84,8 +99,10 @@ function SessionCreate({onSubmit, membersData}: {onSubmit: (data: any) => void, 
         <button className="button" type='submit'>Add</button>
       </form>
       
-      <button className="button red" onClick={() => onSubmit(null)}>Cancel</button>
-      <button className="button" onClick={handleSubmit}>Submit</button>
+      <div className="button-container">
+        <button className="button red" onClick={() => onSubmit(null)}>Cancel</button>
+        <button className="button" onClick={handleSubmit}>Submit</button>
+      </div>
     </div>
   )
 }

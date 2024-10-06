@@ -13,18 +13,22 @@ interface SessionListType {
 
 interface AttendeesType {
   member_id: string;
-  attendance: {
-    entry: boolean;
-    exit: boolean;
-    checkpoints: any[];
-  }
+  entry: boolean;
+  checkpoint_ids: any[];
 };
+
+interface CheckpointType {
+  name: string;
+  expires_at: string;
+}
 
 interface SessionViewType {
   room_id: string;
   session_id: string;
   timestamp: string;
+  entry_expires_at: string;
   ongoing: boolean;
+  checkpoints: CheckpointType[];
   attendees: AttendeesType[];
   additional_info: any;
 };
@@ -143,6 +147,29 @@ function Sessions({reLogin}: {reLogin: () => void}) {
     }
   }
   
+  const handleCheckpoint = async (_id: string, data: any) => {
+    const response = await fetch(fetchUrl + `/${_id}/checkpoint`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+
+    if (response.ok) {
+      handleViewRequest(_id);
+    } else if (response.status == 401) {
+      reLogin();
+    } else if (response.status == 409) {
+      const error = await response.json();
+      alert(error.message)
+    } else {
+      const error = await response.json();
+      console.error("Error:", error)
+    }
+  }
+  
   const handleSecondary = async (_id: string, ongoing: boolean) => {
     const url = ongoing ? fetchUrl + `/${_id}/end` : fetchUrl + `/${_id}`
     const response = await fetch(url, {
@@ -178,7 +205,7 @@ function Sessions({reLogin}: {reLogin: () => void}) {
         break;
       case '/view':
         if (viewData)
-          content = <SessionView data={viewData} onBack={() => changeApp("/list")} onSecondary={handleSecondary} />
+          content = <SessionView data={viewData} onBack={() => changeApp("/list")} onSecondary={handleSecondary} onCheckpoint={handleCheckpoint} />
         break;
     }
   

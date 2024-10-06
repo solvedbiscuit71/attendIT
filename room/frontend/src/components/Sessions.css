@@ -55,6 +55,9 @@
 .sessions .list {
   list-style-type: none;
   padding: 0;
+
+  max-height: 50vh;
+  overflow-y: scroll;
 }
 
 .sessions .list li {
@@ -74,12 +77,24 @@
     margin-block: 20px;
 }
 
+.session-field:first-of-type {
+  margin-top: 0px;
+}
+
 .session-field label {
   margin-right: 10px;
   font-size: 1rem;
   text-align: left;
 }
 
+.session-field select {
+  font-size: 1rem;
+  padding: 5px;
+}
+
+.session-field select+button {
+  margin-left: 10px;
+}
 .session-field input {
   padding: 5px;
   border: 1px solid #ccc;
@@ -99,11 +114,14 @@
 
 .session-view ul, .session-create ul {
   list-style-type: none;
-  padding: 0 0 20px;
 }
 
 .session-view ul span, .session-create ul span {
   font-weight: 700;
+}
+
+.button-container {
+  margin-top: 20px;
 }
 
 .session-view .button, .session-create .button {
@@ -119,11 +137,17 @@
   background-color: #ff4242
 }
 
-.session-view > button:last-of-type, .session-create > button:last-of-type {
+.button-container > button:last-of-type {
   margin-left: 10px;
 }
 
 .session-table {
+  max-height: 70vh;
+  max-width: calc(100vw - 300px);
+  overflow: auto;
+}
+
+.session-table table {
   border-collapse: collapse;
 }
 
@@ -135,9 +159,17 @@
   font-weight: bold;
 }
 
+.session-table td:first-of-type, .session-table th:first-of-type {
+  min-width: 150px;
+}
+
+.session-table td, .session-table th {
+  min-width: 200px;
+}
+
 .session-table td {
   text-align: center;
-  padding: 10px 20px;
+  padding: 10px 10px;
   border: 1px solid black;
 }
 
@@ -147,7 +179,8 @@
 
 .session-create ul.participants {
   list-style-type: none;
-  padding: 20px 0 20px;
+  padding: 0px;
+  margin: 20px 0;
   
   max-height: 50vh;
   overflow-y: scroll;
@@ -156,6 +189,10 @@
 .session-create ul.participants li {
   padding: 10px 0px;
   border-bottom: 1px solid #333;
+}
+
+.session-create ul.participants li label:hover {
+  cursor: pointer;
 }
 
 .sessions ul.participants li:first-of-type {

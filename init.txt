@@ -6,6 +6,7 @@ How to setup mongodb for attendIT?
 > db.createCollection('members')
 > db.createCollection('sessions')
 > db.createCollection('members_sessions')
+> db.createCollection('sessions_checkpoints')
 
 Interface rooms {
     _id: string;
@@ -26,23 +27,39 @@ Interface sessions {
     _id: ObjectId;
     room_id: string; foreign key rooms._id
     timestamp: ISODate;
+    entry_expires_at: ISODate;
     ongoing: boolean = true;
     additional_info: { ... };
+
     Index(room_id, timestamp, {unique: true})
 }
 
+// If a record exists, member has permission to enter the session
 Interface members_sessions {
     _id: ObjectId;
     session_id: ObjectId;
     member_id: string;
-    attendance: {
-        entry: boolean = false;
-        exit: boolean = false;
-        checkpoints: { ... };
-    }
+    entry: boolean = false; // If entry = true, member has entered the session
+    checkpoint_ids: string[] = [...];
+
     Index(session_id, member_id, {unique: true})
 }
 
+Interface sessions_checkpoints {
+    _id: ObjectId;
+    session_id: ObjectId; // insert only sessions[session_id].ongoing = true;
+    name: string;
+    expires_at: ISODate;
+
+    Index(session_id, name, {unique: true})
+}
+
+> db.sessions.createIndex({room_id: 1})
 > db.sessions.createIndex({room_id: 1, timestamp: 1}, {unique: true})
+
+> db.members_sessions.createIndex({session_id: 1})
 > db.members_sessions.createIndex({session_id: 1, member_id: 1}, {unique: true})
+
+> db.sessions_checkpoints.createIndex({session_id: 1})
+> db.sessions_checkpoints.createIndex({session_id: 1, name: 1}, {unique: true})
 

@@ -11,7 +11,11 @@ function MemberList({members, onCreate, onView}: {members: Member[], onCreate: (
 
   const filteredRooms = members.filter(member =>
     member._id.toLowerCase().includes(searchTerm.toLowerCase()) || member.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ).sort((a, b) => {
+    if (a._id < b._id) return -1;
+    else if (a._id > b._id) return 1;
+    else return 0;
+  });
   const errorMessage = members.length == 0 ? "No member available..." : "No match found..."
 
   return (

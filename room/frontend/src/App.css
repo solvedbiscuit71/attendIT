@@ -5,8 +5,8 @@
 
 .navbar {
   background-color: #333;
-  width: 200px; /* Fixed width for the navbar */
-  height: 100vh; /* Full height of the viewport */
+  min-width: 200px; /* Fixed width for the navbar */
+  min-height: 100vh; /* Full height of the viewport */
   
   display: flex;
   flex-direction: column;

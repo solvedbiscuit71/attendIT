@@ -4,10 +4,10 @@ from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
-from pymongo.errors import ServerSelectionTimeoutError, ConnectionFailure
+from pymongo.errors import ServerSelectionTimeoutError, ConnectionFailure, DuplicateKeyError
 from bson import ObjectId
 from pydantic import BaseModel, Field
-from datetime import datetime
+from datetime import datetime, timedelta
 from os import getenv
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
@@ -40,8 +40,12 @@ class LoginRequest(BaseModel):
 class SessionData(BaseModel):
     # (room_id, timestamp) should be unique
     member_ids: list[str]
-    ongoing: bool = True
+    expires_at: int
     additional_info: dict = {}
+    
+class CheckpointData(BaseModel):
+    name: str
+    expires_at: int
 
 @app.post("/login")
 async def login(request: LoginRequest):
@@ -98,31 +102,36 @@ async def add_sessions(body: SessionData, room_id: str = Depends(verify_access))
         if ongoing_session_id is not None:
             return JSONResponse(content={"message": "Data creation failed"}, status_code=409)
         
+        member_count = 0
         async for member in db.members.find({"_id": {"$in": body.member_ids}}):
+            member_count += 1
             if member["ongoing_session_id"] is not None:
                 return JSONResponse(content={"message": "Data creation failed"}, status_code=409)
-
-        body = body.dict()
-        body["room_id"] = room_id
-        body["timestamp"] = datetime.utcnow().replace(microsecond=0)
-        member_ids = body["member_ids"]
-        body.pop("member_ids")
         
-        result = await db.sessions.insert_one(body)
+        if member_count != len(body.member_ids):
+            return JSONResponse(content={"message": "Invalid member ids"}, status_code=400)
+
+        timestamp = datetime.utcnow().replace(microsecond=0)
+        session = {
+            "room_id": room_id,
+            "timestamp": timestamp,
+            "entry_expires_at": timestamp + timedelta(minutes=body.expires_at),
+            "ongoing": True,
+            "additional_info": body.additional_info
+        }
+        
+        result = await db.sessions.insert_one(session)
         session_id = result.inserted_id
         result = await db.rooms.update_one({"_id": room_id}, {"$set": {"ongoing_session_id": session_id}})
-        result = await db.members.update_many({"_id": {"$in": member_ids}}, {"$set": {"ongoing_session_id": session_id}})
+        result = await db.members.update_many({"_id": {"$in": body.member_ids}}, {"$set": {"ongoing_session_id": session_id}})
         
         members_sessions = []
-        for member_id in member_ids:
+        for member_id in body.member_ids:
             members_sessions.append({
                 "session_id": session_id,
                 "member_id": member_id,
-                "attendance": {
-                    "entry": False,
-                    "exit": False,
-                    "checkpoints": [],
-                },
+                "entry": False,
+                "checkpoint_ids": []
             })
         result = await db.members_sessions.insert_many(members_sessions)
 
@@ -130,23 +139,48 @@ async def add_sessions(body: SessionData, room_id: str = Depends(verify_access))
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)
     
-def remove_session_id(body):
-    body.pop("session_id") 
+def remove_keys(body, keys):
+    for key in keys:
+        try:
+            body.pop(key)
+        except KeyError:
+            continue
     return body
 
 @app.get("/sessions/{session_id}")
 async def get_sessions_info(session_id: str, room_id: str = Depends(verify_access)):
+    """
+    Returns {
+        session_id: string;
+        room_id: string;
+        timestamp: string;
+        entry_expires_at: string;
+        checkpoints: {
+            name: string;
+            expires_at: string;
+        }[];
+        ongoing: boolean;
+        additional_info: { ... };
+        attendees: {
+            member_id: string;
+            entry: boolean;
+            checkpoint_ids: string[];
+        }[];
+    }
+    """
     try:
         session_id = ObjectId(session_id)
         session = await db.sessions.find_one({"_id": session_id, "room_id": room_id})
         if session is None:
             return JSONResponse(content={"message": "Session with _id does not exists"}, status_code=404)
 
-        attendees = await db.members_sessions.find({"session_id": session_id}, {"_id": False, "session_id": True, "member_id": True, "attendance": True}).to_list(length=None)
+        attendees = await db.members_sessions.find({"session_id": session_id}).to_list(length=None)
+        checkpoints = await db.sessions_checkpoints.find({"session_id": session_id}).to_list(length=None)
 
         session["session_id"] = str(session["_id"])
-        session.pop("_id")
-        session["attendees"] = list(map(remove_session_id, attendees))
+        session = remove_keys(session, ["_id"])
+        session["attendees"] = list(map(lambda x: remove_keys(x, ["_id", "session_id"]), attendees))
+        session["checkpoints"] = list(map(lambda x: remove_keys(x, ["_id", "session_id"]), checkpoints))
         return session
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)
@@ -168,6 +202,31 @@ async def end_session(session_id: str, room_id: str = Depends(verify_access)):
         return {"message": f"Successfully Ended Session {session_id}"}
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)
+    
+@app.post("/sessions/{session_id}/checkpoint")
+async def add_checkpoint(body: CheckpointData, session_id: str, room_id: str = Depends(verify_access)):
+    try:
+        session_id = ObjectId(session_id)
+        session = await db.sessions.find_one({"_id": session_id, "room_id": room_id}, {"ongoing": True})
+        if not session["ongoing"]:
+            return JSONResponse(content={"message": "Session Already Ended."}, status_code=400)
+        
+        timestamp = datetime.utcnow().replace(microsecond=0)
+        checkpoint = {
+            "session_id": session_id,
+            "name": body.name,
+            "expires_at": timestamp + timedelta(minutes=body.expires_at)
+        }
+        
+        result = await db.sessions_checkpoints.insert_one(checkpoint)
+        print(result)
+        return {"message": f"Checkpoint created successfully"}
+
+    except (ServerSelectionTimeoutError, ConnectionFailure) as e:
+        return JSONResponse(content={"message": "Database Failure"}, status_code=500)
+    
+    except DuplicateKeyError:
+        return JSONResponse(content={"message": f"Checkpoint {body.name} already exists"}, status_code=409)
 
 @app.delete("/sessions/{session_id}")
 async def delete_session(session_id: str, room_id: str = Depends(verify_access)):
@@ -182,6 +241,7 @@ async def delete_session(session_id: str, room_id: str = Depends(verify_access))
         result = await db.sessions.delete_one({"_id": session_id})
         if result.deleted_count == 1:
             result = await db.members_sessions.delete_many({"session_id": session_id})
+            result = await db.sessions_checkpoints.delete_many({"session_id": session_id})
             return {"message": f"Successfully Deleted Session {session_id}"}
         elif result.deleted_count == 0:
             return JSONResponse(content={"message": "Session with _id does not exists"}, status_code=404)

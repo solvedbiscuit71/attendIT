@@ -30,7 +30,7 @@ function RoomCreate({onSubmit}: {onSubmit: (data: any) => void}) {
   }
   
   const handleSubmit = async () => {
-    if (name.length < 5 || passwd.length < 8) return;
+    // if (name.length < 5 || passwd.length < 8) return;
     
     const data = {
       _id: name.toUpperCase(),
