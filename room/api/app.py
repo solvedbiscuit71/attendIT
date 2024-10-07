@@ -1,12 +1,15 @@
+import os
+import numpy as np
+
 from bson import ObjectId
 from collections import namedtuple
 from datetime import datetime, timedelta
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer
+from face_recognition import load_image_file, compare_faces, face_encodings
 from motor.motor_asyncio import AsyncIOMotorClient
-from os import getenv
 from pydantic import BaseModel, Field
 from pymongo.errors import ServerSelectionTimeoutError, ConnectionFailure, DuplicateKeyError
 from utils import hash_password, verify_password, create_access_token, verify_access_token
@@ -15,8 +18,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
 
 app = FastAPI()
 
-MONGODB_URL = getenv("MONGO_URL")
-DB_NAME = getenv("MONGO_DB")
+MONGODB_URL = os.getenv("MONGO_URL")
+DB_NAME = os.getenv("MONGO_DB")
 
 client = AsyncIOMotorClient(MONGODB_URL, serverSelectionTimeoutMS=5000)
 db = client[DB_NAME]
@@ -26,7 +29,7 @@ origins = [
     "http://127.0.0.1:5174",
 ]
 
-ROOM_DOMAIN = getenv('ROOM_DOMAIN')
+ROOM_DOMAIN = os.getenv('ROOM_DOMAIN')
 print(f"[LOG] Domain name = '{ROOM_DOMAIN}'")
 
 app.add_middleware(
@@ -321,5 +324,50 @@ async def get_member_checkpoints(session_id: str, member_session: member_session
         checkpoints = await db.sessions_checkpoints.find({"session_id": ObjectId(session_id)}, {"_id": False}).to_list(length=None)
         return {"checkpoints": update_checkpoint(checkpoints, set(member['checkpoint_ids']))}
         
+    except (ServerSelectionTimeoutError, ConnectionFailure) as e:
+        return JSONResponse(content={"message": "Database Failure"}, status_code=500)
+
+@app.post("/sessions/{session_id}/member_checkpoints")
+async def add_member_checkpoints(session_id: str, image: UploadFile, checkpoint_id: str = Form(), member_session: member_session_tuple = Depends(verify_member_access)):
+    if session_id != member_session.session_id:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    member_id = member_session.member_id
+    try:
+        checkpoint = await db.sessions_checkpoints.find_one({"session_id": ObjectId(session_id), "name": checkpoint_id})
+        if checkpoint is None:
+            return JSONResponse(content={"message": f"Checkpoint {checkpoint_id} does not exist"}, status_code=404)
+
+        time_now = datetime.now().replace(microsecond=0)
+        expires_at = checkpoint['expires_at']
+        
+        if time_now >= expires_at:
+            return JSONResponse(content={"message": "Checkpoint expired"}, status_code=400)
+        
+        member = await db.members.find_one({"_id": member_id}, {"encoding": True})
+        member_encoding = np.frombuffer(member["encoding"])
+
+        # TODO: Implement face_recognition model
+        # _, extension = image.content_type.split('/')
+        # filename = f'tmp.{extension}'
+        # with open(filename, 'wb') as file:
+        #     content = await image.read()
+            # file.write(content)
+            
+        # face_image = load_image_file(filename)
+        # encoding = face_encodings(face_image)
+        
+        # if len(encoding) == 0:
+        #     print("[LOG] No faces detected")
+            # return JSONResponse(content={"message": "Face recognition failed"}, status_code=403)
+
+        # result = compare_faces([member_encoding], encoding[0], tolerance=0.6)[0]
+        result = True
+        if result:
+            await db.members_sessions.update_one({"session_id": ObjectId(session_id), "member_id": member_id}, {"$push": {"checkpoint_ids": checkpoint_id}})
+            return JSONResponse(content={"message": "Successfully checkpoint completed"}, status_code=201)
+        else:
+            return JSONResponse(content={"message": "Face recognition failed"}, status_code=403)
+
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)

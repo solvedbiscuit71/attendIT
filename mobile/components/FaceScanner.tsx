@@ -3,10 +3,11 @@ import { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Platform, Image } from 'react-native';
 
 interface Params {
-  onTaken: (photoUri: string | null) => void;
+  onTaken: (checkpointId: string, photoUri: string | null) => void;
+  checkpointId: string;
 };
 
-export default function FaceScanner({onTaken}: Params) {
+export default function FaceScanner({checkpointId, onTaken}: Params) {
   const [cameraReady, setCameraReady] = useState<boolean>(false);
   const camera = useRef<any>();
   const [photoUri, setPhotoUri] = useState<string | null>(null);
@@ -14,7 +15,7 @@ export default function FaceScanner({onTaken}: Params) {
   
   const handleTaken = async () => {
     if (cameraReady) {
-      const data: CameraCapturedPicture = await camera.current.takePictureAsync({imageType: 'jpg'});
+      const data: CameraCapturedPicture = await camera.current.takePictureAsync({imageType: 'jpg', exif: false, quality: 0});
       setPhotoUri(data.uri);
     }
   };
@@ -43,7 +44,7 @@ export default function FaceScanner({onTaken}: Params) {
           <TouchableOpacity style={styles.redButton} onPress={() => setPhotoUri(null)}>
             <Text style={styles.buttonText}>Retake</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => onTaken(photoUri)}>
+          <TouchableOpacity style={styles.button} onPress={() => onTaken(checkpointId, photoUri)}>
             <Text style={styles.buttonText}>Proceed</Text>
           </TouchableOpacity>
         </View>
@@ -55,7 +56,7 @@ export default function FaceScanner({onTaken}: Params) {
     <View style={styles.container}>
       <CameraView style={styles.camera} facing={'front'} onCameraReady={() => setCameraReady(true)} ref={camera} />
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.redButton} onPress={() => onTaken(null)}>
+        <TouchableOpacity style={styles.redButton} onPress={() => onTaken(checkpointId, null)}>
           <Text style={styles.buttonText}>Back</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={handleTaken}>

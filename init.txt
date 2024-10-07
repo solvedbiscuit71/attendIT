@@ -20,6 +20,7 @@ Interface members {
     name: string;
     password: string;
     ongoing_session_id: ObjectId | null = null;
+    encoding: Binary;
     additional_info: { ... };
 }
 

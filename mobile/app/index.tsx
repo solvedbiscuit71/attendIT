@@ -29,6 +29,7 @@ export default function App() {
   const [name, setName] = useState<string | null>(null);
   const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
   const [cameraOn, setCameraOn] = useState<boolean>(false);
+  const [checkpointId, setCheckpointId] = useState<string | null>(null);
   
   const onQRcodeScanned = (type: any, data: any) => {
     save('session_url', data);
@@ -58,9 +59,53 @@ export default function App() {
     setName(null);
   }
   
-  const onCameraTaken = (photoUri: string | null) => {
-    console.log(photoUri);
-    setCameraOn(false);
+  const onCameraTaken = async (checkpointId: string, photoUri: string | null) => {
+    if (photoUri === null) {
+      setCameraOn(false);
+      setCheckpointId(null);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("checkpoint_id", checkpointId);
+    // @ts-ignore
+    formData.append("image", {
+        uri: photoUri,
+        name: "unknown.jpeg",
+        type: "image/jpeg",
+    });
+    const options = {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data; boundary=---011000010111000001101001',
+        },
+    };
+    
+    try {
+      const response = await fetch(sessionUrl + '/member_checkpoints', options);
+      
+      if (response.ok) {
+        // @ts-ignore
+        loadingCheckpoints(sessionUrl, token);
+      } else if (response.status == 400) {
+        alert("Checkpoint expired.")
+      }
+      else if (response.status == 403) {
+        alert("Face recognition failed.");
+      } else if (response.status == 401) {
+        onLogout();
+      } else {
+        const error = await response.json();
+        console.error("Error:", error)
+      }
+
+      setCameraOn(false);
+      setCheckpointId(null);
+    } catch (error) {
+      console.error("Network error:", error)
+    }
   }
 
   const loadingCheckpoints = async (url: string, access_token: string) => {
@@ -114,21 +159,20 @@ export default function App() {
     return <Text>Loading...</Text>
   }
 
+  let content = null;
   if (sessionUrl === null) {
-    return <QRcodeScanner onScanned={onQRcodeScanned} />
+    content = <QRcodeScanner onScanned={onQRcodeScanned} />
+  } else if (token === null) {
+    content = <Login onBack={onLogout} onLogin={onLoggedIn} loginUrl={sessionUrl + '/login'} />
+  } else if (cameraOn && checkpointId) {
+    content = <FaceScanner checkpointId={checkpointId} onTaken={onCameraTaken} />
   } else {
-    let content = null;
-    if (token === null) {
-      content = <Login onBack={onLogout} onLogin={onLoggedIn} loginUrl={sessionUrl + '/login'} />
-    } else if (cameraOn) {
-      content = <FaceScanner onTaken={onCameraTaken} />
-    } else {
-      content = (
-        <>
+    content = (
+      <>
         <Image style={styles.image} source={require("../assets/images/classroom.jpeg")} />
         <View style={styles.main}>
           <Text style={styles.h2}>Welcome, {name}!</Text>
-          <Text style={styles.session}><Text style={{fontWeight: 'bold'}}>Session ID:</Text> {sessionUrl.split('/').at(-1)}</Text>
+          <Text style={styles.session}><Text style={{ fontWeight: 'bold' }}>Session ID:</Text> {sessionUrl.split('/').at(-1)}</Text>
 
           <View style={styles.listContainer}>
             {checkpoints.length == 0 ? <Text>Loading...</Text> : checkpoints.map(checkpoint => {
@@ -153,7 +197,7 @@ export default function App() {
                   {
                     status != "Pending" ?
                       <Text style={{ ...styles.listText, color: color }}>{status}</Text>
-                      : (<TouchableOpacity style={styles.miniButton} onPress={() => setCameraOn(true)}>
+                      : (<TouchableOpacity style={styles.miniButton} onPress={() => { setCameraOn(true); setCheckpointId(checkpoint.name) }}>
                         <Text style={styles.miniButtonText}>Pending</Text>
                       </TouchableOpacity>)
                   }
@@ -161,7 +205,7 @@ export default function App() {
               )
             })}
           </View>
-          
+
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.redButton} onPress={onLogout}>
               <Text style={styles.buttonText}>Logout</Text>
@@ -171,29 +215,28 @@ export default function App() {
             </TouchableOpacity>
           </View>
         </View>
-        </>
-      )
-    }
-    return (
-      <>
-        <StatusBar barStyle={'dark-content'} />
-        <SafeAreaView style={styles.safearea}>
-          <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-            <View style={styles.container}>
-              <View style={styles.header}>
-                <Text style={styles.h1}>AttendIT</Text>
-                <Text style={styles.subtitle}>Delegating attendance to the attendees.</Text>
-              </View>
-
-              <View style={styles.content}>
-                {content}
-              </View>
-            </View>
-          </ScrollView>
-        </SafeAreaView>
       </>
     )
   }
+  return (
+    <>
+      <StatusBar barStyle={'dark-content'} />
+      <SafeAreaView style={styles.safearea}>
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          <View style={styles.container}>
+            <View style={styles.header}>
+              <Text style={styles.h1}>AttendIT</Text>
+              <Text style={styles.subtitle}>Delegating attendance to the attendees.</Text>
+            </View>
+
+            <View style={styles.content}>
+              {content}
+            </View>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </>
+  )
 }
 
 const styles = StyleSheet.create({
@@ -201,7 +244,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollView: {
-    marginTop: Platform.select({ios: 0, android: 24}),
+    marginTop: Platform.select({ ios: 0, android: 24 }),
     flexGrow: 1
   },
   container: {
@@ -280,7 +323,7 @@ const styles = StyleSheet.create({
   },
   miniButtonText: {
     color: 'white',
-    fontSize: Platform.select({ios: 14, android: 12})
+    fontSize: Platform.select({ ios: 14, android: 12 })
   },
   buttonText: {
     fontSize: Platform.select({ ios: 18, android: 14 }),
