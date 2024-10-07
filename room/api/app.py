@@ -27,6 +27,7 @@ origins = [
 ]
 
 ROOM_DOMAIN = getenv('ROOM_DOMAIN')
+print(f"[LOG] Domain name = '{ROOM_DOMAIN}'")
 
 app.add_middleware(
     CORSMiddleware,

@@ -5,6 +5,7 @@ import QRcodeScanner from "@/components/QRcodeScanner";
 import Login from "@/components/Login";
 
 import * as SecureStore from 'expo-secure-store';
+import FaceScanner from "@/components/FaceScanner";
 
 async function save(key: string, value: string) {
   await SecureStore.setItemAsync(key, value);
@@ -27,6 +28,7 @@ export default function App() {
   const [sessionUrl, setSessionUrl] = useState<string | null>(null);
   const [name, setName] = useState<string | null>(null);
   const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
+  const [cameraOn, setCameraOn] = useState<boolean>(false);
   
   const onQRcodeScanned = (type: any, data: any) => {
     save('session_url', data);
@@ -41,7 +43,9 @@ export default function App() {
     setToken(access_token);
     setName(name);
     
-    loadingCheckpoints(access_token);
+    if (sessionUrl) {
+      loadingCheckpoints(sessionUrl, access_token);
+    }
   }
   
   const onLogout = () => {
@@ -53,10 +57,15 @@ export default function App() {
     setToken(null);
     setName(null);
   }
+  
+  const onCameraTaken = (photoUri: string | null) => {
+    console.log(photoUri);
+    setCameraOn(false);
+  }
 
-  const loadingCheckpoints = async (access_token: string) => {
+  const loadingCheckpoints = async (url: string, access_token: string) => {
     try {
-      const response = await fetch(sessionUrl + '/member_checkpoints', {
+      const response = await fetch(url + '/member_checkpoints', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${access_token}`
@@ -74,6 +83,8 @@ export default function App() {
       }
     } catch (error) {
       console.error("Network error:", error)
+      console.error("URL:", sessionUrl + '/member_checkpoints')
+      console.error("Access Token:", access_token)
     }
     
   }
@@ -81,18 +92,17 @@ export default function App() {
   useEffect(() => {
     const checkExistingValue = async () => {
       const session_url = await getValueFor('session_url'); 
-      if (session_url && session_url.length > 0) {
-        setSessionUrl(session_url);
-      }
 
       const access_token = await getValueFor('access_token');
       const member_name = await getValueFor('member_name');
 
-      if (access_token && access_token.length > 0 && member_name && member_name.length > 0) {
-        setToken(access_token);
-        setName(member_name);
-        
-        loadingCheckpoints(access_token);
+      if (session_url && session_url.length > 0) {
+        setSessionUrl(session_url);
+        if (access_token && access_token.length > 0 && member_name && member_name.length > 0) {
+          setToken(access_token);
+          setName(member_name);
+          setTimeout(() => loadingCheckpoints(session_url, access_token), 0);
+        }
       }
       setLoading(false);
     }
@@ -110,6 +120,8 @@ export default function App() {
     let content = null;
     if (token === null) {
       content = <Login onBack={onLogout} onLogin={onLoggedIn} loginUrl={sessionUrl + '/login'} />
+    } else if (cameraOn) {
+      content = <FaceScanner onTaken={onCameraTaken} />
     } else {
       content = (
         <>
@@ -135,10 +147,16 @@ export default function App() {
               return (
                 <View style={styles.listItem} key={checkpoint.name}>
                   <View>
-                    <Text style={{...styles.listText, fontWeight: 'bold'}}>{checkpoint.name}</Text>
+                    <Text style={{ ...styles.listText, fontWeight: 'bold' }}>{checkpoint.name}</Text>
                     <Text style={styles.listText}>{checkpoint.expires_at}</Text>
                   </View>
-                  <Text style={{...styles.listText, color: color}}>{status}</Text>
+                  {
+                    status != "Pending" ?
+                      <Text style={{ ...styles.listText, color: color }}>{status}</Text>
+                      : (<TouchableOpacity style={styles.miniButton} onPress={() => setCameraOn(true)}>
+                        <Text style={styles.miniButtonText}>Pending</Text>
+                      </TouchableOpacity>)
+                  }
                 </View>
               )
             })}
@@ -148,7 +166,7 @@ export default function App() {
             <TouchableOpacity style={styles.redButton} onPress={onLogout}>
               <Text style={styles.buttonText}>Logout</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={() => loadingCheckpoints(token)}>
+            <TouchableOpacity style={styles.button} onPress={() => loadingCheckpoints(sessionUrl, token)}>
               <Text style={styles.buttonText}>Refresh</Text>
             </TouchableOpacity>
           </View>
@@ -159,7 +177,7 @@ export default function App() {
     return (
       <>
         <StatusBar barStyle={'dark-content'} />
-        <SafeAreaView>
+        <SafeAreaView style={styles.safearea}>
           <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
             <View style={styles.container}>
               <View style={styles.header}>
@@ -167,7 +185,9 @@ export default function App() {
                 <Text style={styles.subtitle}>Delegating attendance to the attendees.</Text>
               </View>
 
-              {content}
+              <View style={styles.content}>
+                {content}
+              </View>
             </View>
           </ScrollView>
         </SafeAreaView>
@@ -177,14 +197,20 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  safearea: {
+    flex: 1,
+  },
   scrollView: {
-    marginTop: Platform.select({ios: 0, android: 24})
+    marginTop: Platform.select({ios: 0, android: 24}),
+    flexGrow: 1
   },
   container: {
     marginHorizontal: 20,
     marginTop: 10,
   },
   header: {
+  },
+  content: {
   },
   h1: {
     fontSize: Platform.select({ ios: 32, android: 22 }),
@@ -246,6 +272,15 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     padding: 10,
     flexGrow: 1,
+  },
+  miniButton: {
+    backgroundColor: "#007BFF",
+    borderRadius: 4,
+    padding: 10,
+  },
+  miniButtonText: {
+    color: 'white',
+    fontSize: Platform.select({ios: 14, android: 12})
   },
   buttonText: {
     fontSize: Platform.select({ ios: 18, android: 14 }),
