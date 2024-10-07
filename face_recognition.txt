@@ -1,0 +1,34 @@
+We will be using face_recognition package from this github repository,
+> https://github.com/ageitgey/face_recognition
+
+# How to install face_recognition (macOS)
+
+1. Ensure `cmake` is installed
+
+   $ brew install cmake
+
+2. Install `dlib` from source
+
+   a. Have python3 installed
+   b. Install Xcode
+   c. Have homebrew installed
+
+   Clone the code from github
+
+   $ git clone https://github.com/davisking/dlib.git
+
+   Build the main dlib library (optional if you just want to use Python)
+
+   $ cd dlib
+   $ mkdir build; cd build; cmake ..; cmake --build .
+
+   Build and install the Python extensions
+
+   $ cd ..
+   $ python3 setup.py install
+
+   At this point, you should be able to run python3 and type `import dlib` successfully.
+
+3. Finally, install the python package
+
+   $ pip3 install face_recognition
