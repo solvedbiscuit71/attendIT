@@ -5,6 +5,7 @@ function MemberCreate({onSubmit}: {onSubmit: (data: any) => void}) {
   const [name, setName] = useState('')
   const [passwd, setPasswd] = useState('')
   const [fields, setFields] = useState<any>({})
+  const [file, setFile] = useState<File | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   
   const addField = (event: React.FormEvent) => {
@@ -33,11 +34,16 @@ function MemberCreate({onSubmit}: {onSubmit: (data: any) => void}) {
   const handleSubmit = async () => {
     // if (name.length < 5 || passwd.length < 8) return;
     
+    if (file === null) {
+      return;
+    }
+    
     const data = {
       _id: id.toUpperCase(),
       name: name,
       password: passwd,
-      additional_info: fields
+      additional_info: fields,
+      image: file
     }
     onSubmit(data)
   }
@@ -56,6 +62,13 @@ function MemberCreate({onSubmit}: {onSubmit: (data: any) => void}) {
         <label htmlFor="member-create-pwd">Password : </label>
         <input type="password" id='member-create-pwd' value={passwd} onChange={(e) => setPasswd(e.target.value)} />
       </div>
+      
+      <div className="member-field">
+        <label htmlFor="member-create-image">Photo : </label>
+        <input type="file" name="image" id="member-create-image" onChange={(e) => setFile(e.target.files && e.target.files?.length > 0 ? e.target.files[0] : null)} required />
+      </div>
+      
+      {file && <img className="member-image" src={URL.createObjectURL(file)} alt="Member Photo" />}
 
       
       <h2>Additional Info</h2>

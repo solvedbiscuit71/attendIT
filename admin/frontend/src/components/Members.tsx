@@ -53,13 +53,19 @@ function Members({reLogin}: {reLogin: () => void}) {
       return;      
     }
     
+    const formData = new FormData();
+    formData.append("_id", data._id)
+    formData.append("name", data.name)
+    formData.append("password", data.password)
+    formData.append("additional_info", JSON.stringify(data.additional_info))
+    formData.append("image", data.image)
+    
     const response = await fetch(addUrl, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data)
+        body: formData
     });
     
     if (response.ok) {

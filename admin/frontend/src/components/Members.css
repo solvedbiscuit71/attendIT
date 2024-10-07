@@ -79,6 +79,19 @@
   border-radius: 4px;
 }
 
+.member-field input[type='file'] {
+  border: none;
+}
+
+.member-field input[type='file']:hover {
+  cursor: pointer;
+}
+
+.member-image {
+  height: 200px;
+  margin-bottom: 20px;
+}
+
 .member-view .member-ongoing input {
   min-width: 180px;
 }

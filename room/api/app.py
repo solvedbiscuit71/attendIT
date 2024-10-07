@@ -111,7 +111,7 @@ async def add_sessions(body: SessionData, room_id: str = Depends(verify_access))
             return JSONResponse(content={"message": "Data creation failed"}, status_code=409)
         
         member_count = 0
-        async for member in db.members.find({"_id": {"$in": body.member_ids}}):
+        async for member in db.members.find({"_id": {"$in": body.member_ids}}, {"password": False, "encoding": False}):
             member_count += 1
             if member["ongoing_session_id"] is not None:
                 return JSONResponse(content={"message": "Data creation failed"}, status_code=409)
@@ -280,7 +280,7 @@ async def get_members(verified: bool = Depends(verify_access)):
 @app.post("/sessions/{session_id}/login")
 async def login_member(request: MemberLoginRequest, session_id: str):
     try:
-        member = await db.members.find_one({"_id": request.member_id})
+        member = await db.members.find_one({"_id": request.member_id}, {"encoding": False})
         if member is None:
             return JSONResponse(content={"message": f"Invalid username or password"}, status_code=404)
         if not verify_password(request.password, member["password"]):
