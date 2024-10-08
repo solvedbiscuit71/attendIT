@@ -73,7 +73,7 @@ function Members({reLogin}: {reLogin: () => void}) {
       changeApp('/list');
     } else if (response.status == 401) {
       reLogin();
-    } else if (response.status == 409) {
+    } else if (response.status == 409 || response.status == 406) {
       const error = await response.json();
       alert(error.message)
     } else {

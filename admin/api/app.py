@@ -1,8 +1,8 @@
 import os
 import json
 import numpy as np
+import face_recognition
 
-from face_recognition import load_image_file, compare_faces, face_encodings
 from utils import hash_password, verify_password, create_access_token, verify_access_token
 from fastapi import FastAPI, HTTPException, Depends, Form, UploadFile
 from fastapi.responses import JSONResponse
@@ -13,6 +13,7 @@ from pymongo.errors import ServerSelectionTimeoutError, ConnectionFailure
 from bson import ObjectId
 from pydantic import BaseModel, Field
 from datetime import datetime
+from PIL import Image, ImageOps
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
 
@@ -168,7 +169,7 @@ async def delete_members(_id: str, verified: bool = Depends(verify_access)):
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)
 
 @app.post("/members")
-async def add_batches(image: UploadFile, member_id: str = Form(alias="_id"), name: str = Form(), password: str = Form(), additional_info: str = Form(), verified: bool = Depends(verify_access)):
+async def add_members(image: UploadFile, member_id: str = Form(alias="_id"), name: str = Form(), password: str = Form(), additional_info: str = Form(), verified: bool = Depends(verify_access)):
     try:
         existing_record = await db.members.find_one({"_id": member_id})
         if existing_record:
@@ -180,9 +181,27 @@ async def add_batches(image: UploadFile, member_id: str = Form(alias="_id"), nam
             content = await image.read()
             file.write(content)
             
-        face_image = load_image_file(filename)
-        encoding = face_encodings(face_image)[0]
-        print(encoding)
+        unknown_image = Image.open(filename)
+        unknown_image = ImageOps.exif_transpose(unknown_image)
+
+        width, height = unknown_image.size
+
+        new_width = int(width * 0.25)
+        new_height = int(height * 0.25)
+
+        unknown_image = unknown_image.resize((new_width, new_height))
+        unknown_image = np.array(unknown_image)
+
+        face_locations = face_recognition.face_locations(unknown_image)
+        unknown_encoding = face_recognition.face_encodings(unknown_image, face_locations)
+
+        if len(face_locations) == 0:
+            print("[LOG] No faces detected")
+            return JSONResponse(content={"message": "No face detected"}, status_code=406)
+        
+        if len(face_locations) > 1:
+            print("[LOG] More than one face detected")
+            return JSONResponse(content={"message": "More than one face detected"}, status_code=406)
         
         body = {
             "_id": member_id,
@@ -190,7 +209,7 @@ async def add_batches(image: UploadFile, member_id: str = Form(alias="_id"), nam
             "password": hash_password(password),
             "ongoing_session_id": None,
             "additional_info": json.loads(additional_info),
-            "encoding": encoding.tobytes(),
+            "encoding": unknown_encoding[0].tobytes(),
         }
         result = await db.members.insert_one(body)
         return JSONResponse(content={"message": "Data created successfully"}, status_code=201)

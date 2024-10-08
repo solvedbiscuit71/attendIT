@@ -91,11 +91,11 @@ export default function App() {
         loadingCheckpoints(sessionUrl, token);
       } else if (response.status == 400) {
         alert("Checkpoint expired.")
-      }
-      else if (response.status == 403) {
-        alert("Face recognition failed.");
       } else if (response.status == 401) {
         onLogout();
+      } else if (response.status == 406 || response.status == 403) {
+        const data = await response.json()
+        alert(data["message"]);
       } else {
         const error = await response.json();
         console.error("Error:", error)

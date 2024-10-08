@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import face_recognition
 
 from bson import ObjectId
 from collections import namedtuple
@@ -8,11 +9,11 @@ from fastapi import FastAPI, HTTPException, Depends, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer
-from face_recognition import load_image_file, compare_faces, face_encodings
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field
 from pymongo.errors import ServerSelectionTimeoutError, ConnectionFailure, DuplicateKeyError
 from utils import hash_password, verify_password, create_access_token, verify_access_token
+from PIL import Image, ImageOps
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
 
@@ -347,26 +348,45 @@ async def add_member_checkpoints(session_id: str, image: UploadFile, checkpoint_
         member = await db.members.find_one({"_id": member_id}, {"encoding": True})
         member_encoding = np.frombuffer(member["encoding"])
 
-        # TODO: Implement face_recognition model
-        # _, extension = image.content_type.split('/')
-        # filename = f'tmp.{extension}'
-        # with open(filename, 'wb') as file:
-        #     content = await image.read()
-            # file.write(content)
-            
-        # face_image = load_image_file(filename)
-        # encoding = face_encodings(face_image)
-        
-        # if len(encoding) == 0:
-        #     print("[LOG] No faces detected")
-            # return JSONResponse(content={"message": "Face recognition failed"}, status_code=403)
+        if image.content_type != 'image/jpeg':
+            return JSONResponse(content={"message": f"Unsupported format type {image.content_type}"}, status_code=406)
 
-        # result = compare_faces([member_encoding], encoding[0], tolerance=0.6)[0]
-        result = True
-        if result:
+        with open('tmp.jpeg', 'wb') as file:
+            content = await image.read()
+            file.write(content)
+            
+        unknown_image = Image.open('tmp.jpeg')
+        unknown_image = ImageOps.exif_transpose(unknown_image)
+
+        width, height = unknown_image.size
+
+        new_width = int(width * 0.25)
+        new_height = int(height * 0.25)
+
+        unknown_image = unknown_image.resize((new_width, new_height))
+        unknown_image = np.array(unknown_image)
+
+        face_locations = face_recognition.face_locations(unknown_image)
+        unknown_encoding = face_recognition.face_encodings(unknown_image, face_locations)
+
+        if len(face_locations) == 0:
+            print("[LOG] No faces detected")
+            return JSONResponse(content={"message": "No face detected"}, status_code=406)
+        
+        if len(face_locations) > 1:
+            print("[LOG] More than one face detected")
+            return JSONResponse(content={"message": "More than one face detected"}, status_code=406)
+        
+        unknown_encoding = unknown_encoding[0]
+        matches = face_recognition.compare_faces(known_face_encodings=[member_encoding], face_encoding_to_check=unknown_encoding, tolerance=0.4)
+        face_distances = face_recognition.face_distance([member_encoding], unknown_encoding)
+
+        if matches[0]:
+            print(f"[LOG] face verification completed, distance = {face_distances[0]}")
             await db.members_sessions.update_one({"session_id": ObjectId(session_id), "member_id": member_id}, {"$push": {"checkpoint_ids": checkpoint_id}})
             return JSONResponse(content={"message": "Successfully checkpoint completed"}, status_code=201)
         else:
+            print(f"[LOG] face verification failed, distance = {face_distances[0]}")
             return JSONResponse(content={"message": "Face recognition failed"}, status_code=403)
 
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:

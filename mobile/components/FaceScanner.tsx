@@ -15,7 +15,7 @@ export default function FaceScanner({checkpointId, onTaken}: Params) {
   
   const handleTaken = async () => {
     if (cameraReady) {
-      const data: CameraCapturedPicture = await camera.current.takePictureAsync({imageType: 'jpg', exif: false, quality: 0});
+      const data: CameraCapturedPicture = await camera.current.takePictureAsync({imageType: 'jpg'});
       setPhotoUri(data.uri);
     }
   };
