@@ -22,12 +22,17 @@ interface Checkpoint {
   completed: boolean;
 }
 
+interface MemberCheckpoints {
+  checkpoints: Checkpoint[];
+  ongoing: boolean;
+}
+
 export default function App() {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null)
   const [sessionUrl, setSessionUrl] = useState<string | null>(null);
   const [name, setName] = useState<string | null>(null);
-  const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
+  const [memberCheckpoints, setMemberCheckpoints] = useState<MemberCheckpoints | null>(null);
   const [cameraOn, setCameraOn] = useState<boolean>(false);
   const [checkpointId, setCheckpointId] = useState<string | null>(null);
   
@@ -90,7 +95,8 @@ export default function App() {
         // @ts-ignore
         loadingCheckpoints(sessionUrl, token);
       } else if (response.status == 400) {
-        alert("Checkpoint expired.")
+        const data = await response.json()
+        alert(data["message"])
       } else if (response.status == 401) {
         onLogout();
       } else if (response.status == 406 || response.status == 403) {
@@ -119,7 +125,7 @@ export default function App() {
 
       if (response.ok) {
         const result = await response.json();
-        setCheckpoints(result['checkpoints'])
+        setMemberCheckpoints(result);
       } else if (response.status == 401) {
         onLogout();
       } else {
@@ -172,17 +178,25 @@ export default function App() {
         <Image style={styles.image} source={require("../assets/images/classroom.jpeg")} />
         <View style={styles.main}>
           <Text style={styles.h2}>Welcome, {name}!</Text>
-          <Text style={styles.session}><Text style={{ fontWeight: 'bold' }}>Session ID:</Text> {sessionUrl.split('/').at(-1)}</Text>
+          <View style={styles.session}>
+            <Text style={{ fontWeight: 'bold' }}>Session ID:</Text>
+            <Text>{sessionUrl.split('/').at(-1)}</Text>
+            {memberCheckpoints != null && !memberCheckpoints.ongoing && (
+            <View style={styles.badge}>
+              <Text style={{color: 'white'}}>Ended</Text>
+            </View>
+            )}
+          </View>
 
           <View style={styles.listContainer}>
-            {checkpoints.length == 0 ? <Text>Loading...</Text> : checkpoints.map(checkpoint => {
+            { (memberCheckpoints == null || memberCheckpoints.checkpoints.length == 0) ? <Text>Loading...</Text> : memberCheckpoints?.checkpoints.map(checkpoint => {
               const now = new Date().getTime();
               const expires_at = new Date(checkpoint.expires_at).getTime();
               let status, color;
               if (checkpoint.completed) {
                 status = "Completed";
                 color = "#72cc91";
-              } else if (now < expires_at) {
+              } else if (now < expires_at && memberCheckpoints.ongoing) {
                 status = "Pending"
               } else {
                 status = "Missed";
@@ -276,7 +290,17 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   session: {
-    fontSize: Platform.select({ ios: 16, android: 14 })
+    fontSize: Platform.select({ ios: 16, android: 14 }),
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5
+  },
+  badge: {
+    backgroundColor: "#ff4242",
+    borderRadius: 4,
+    padding: 5,
+    color: 'white',
   },
   listContainer: {
     marginVertical: 20,

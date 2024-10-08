@@ -109,6 +109,30 @@
   text-decoration: underline;
 }
 
+.session-view .session-header {
+  display: flex;
+  
+  align-items: center;
+  gap: 10px;
+}
+
+.session-view .session-header svg:hover {
+  cursor: pointer;
+  animation: shakeImage 0.5s ease-in-out;
+}
+
+@keyframes shakeImage {
+  0% {
+    transform: rotate3d(0, 0, 0, 0deg);
+  }
+  50% {
+    transform: rotate3d(0, 0, 1, 45deg);
+  }
+  100% {
+    transform: rotate3d(0, 0, 0, -45deg);
+  }
+}
+
 .session-view ul, .session-create ul {
   list-style-type: none;
 }

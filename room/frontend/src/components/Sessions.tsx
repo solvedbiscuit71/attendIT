@@ -206,7 +206,7 @@ function Sessions({reLogin}: {reLogin: () => void}) {
         break;
       case '/view':
         if (viewData)
-          content = <SessionView data={viewData} onBack={() => changeApp("/list")} onSecondary={handleSecondary} onCheckpoint={handleCheckpoint} />
+          content = <SessionView data={viewData} onBack={() => changeApp("/list")} onSecondary={handleSecondary} onCheckpoint={handleCheckpoint} onRefresh={handleViewRequest} />
         break;
     }
   

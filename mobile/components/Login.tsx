@@ -41,6 +41,8 @@ export default function Login({loginUrl, onLogin, onBack}: Params) {
         onLogin(result.access_token, result.member_info["name"])
       } else if (response.status == 401) {
         alert("Invalid username or password");
+      } else if (response.status == 403) {
+        alert("Access denied to session");
       } else if (response.status == 404) {
         alert("Invalid username");
       } else {

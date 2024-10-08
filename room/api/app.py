@@ -291,7 +291,7 @@ async def login_member(request: MemberLoginRequest, session_id: str):
             return JSONResponse(content={"message": f"Invalid username or password"}, status_code=401)
         count = await db.members_sessions.count_documents({"member_id": request.member_id, "session_id": ObjectId(session_id)})
         if count == 0:
-            return JSONResponse(content={"message": f"Access denied to session"}, status_code=401)
+            return JSONResponse(content={"message": f"Access denied to session"}, status_code=403)
 
         member = remove_keys(member, ['password', 'ongoing_session_id'])
         access_token = create_access_token(data={"member_id": request.member_id, "session_id": session_id}, expires_delta=timedelta(days=1))
@@ -321,9 +321,18 @@ async def get_member_checkpoints(session_id: str, member_session: member_session
     
     member_id = member_session.member_id
     try:
-        member = await db.members_sessions.find_one({"session_id": ObjectId(session_id),"member_id": member_id}, {"_id": False, "checkpoint_ids": True})
+        member = await db.members.find_one({"_id": member_id}, {"ongoing_session_id": True})
+        member_session = await db.members_sessions.find_one({"session_id": ObjectId(session_id),"member_id": member_id}, {"_id": False, "checkpoint_ids": True})
+        
+        if member_session is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        
         checkpoints = await db.sessions_checkpoints.find({"session_id": ObjectId(session_id)}, {"_id": False}).to_list(length=None)
-        return {"checkpoints": update_checkpoint(checkpoints, set(member['checkpoint_ids']))}
+
+        return {
+            "checkpoints": update_checkpoint(checkpoints, set(member_session['checkpoint_ids'])),
+            "ongoing": member["ongoing_session_id"] == ObjectId(session_id)
+        }
         
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)
@@ -345,8 +354,11 @@ async def add_member_checkpoints(session_id: str, image: UploadFile, checkpoint_
         if time_now >= expires_at:
             return JSONResponse(content={"message": "Checkpoint expired"}, status_code=400)
         
-        member = await db.members.find_one({"_id": member_id}, {"encoding": True})
+        member = await db.members.find_one({"_id": member_id}, {"ongoing_session_id": True, "encoding": True})
         member_encoding = np.frombuffer(member["encoding"])
+        
+        if member["ongoing_session_id"] != ObjectId(session_id):
+            return JSONResponse(content={"message": "Session ended"}, status_code=400)
 
         if image.content_type != 'image/jpeg':
             return JSONResponse(content={"message": f"Unsupported format type {image.content_type}"}, status_code=406)

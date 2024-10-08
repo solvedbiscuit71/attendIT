@@ -1,16 +1,19 @@
 import { useRef } from "react";
 import { SessionViewType } from "../Sessions";
 import { QRCodeSVG } from "qrcode.react";
+import { RefreshIcon } from "../../assets/Icons";
 
 interface Props {
   data: SessionViewType;
   onBack: () => void;
   onSecondary: (_id: string, ongoing: boolean) => void;
   onCheckpoint: (_id: string, data: any) => void;
+  onRefresh: (_id: string) => void;
 };
 
-function SessionView({ data, onBack, onSecondary, onCheckpoint }: Props) {
+function SessionView({ data, onBack, onSecondary, onCheckpoint, onRefresh }: Props) {
   const formRef = useRef<HTMLFormElement>(null);
+  console.log(data)
 
   const handleCheckpoint = (event: React.FormEvent) => {
     event.preventDefault();
@@ -57,7 +60,10 @@ function SessionView({ data, onBack, onSecondary, onCheckpoint }: Props) {
       }
       </ul>
       
-      <h2>Attendees</h2>
+      <div className="session-header">
+        <h2>Attendees</h2>
+        {data.ongoing && <RefreshIcon onClick={() => onRefresh(data.session_id)} />}
+      </div>
       
       <div className="session-table">
         <table>
