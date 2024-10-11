@@ -3,7 +3,7 @@ import { LogoutIcon } from "./assets/Icons";
 
 import Login from "./components/Login";
 import Rooms from "./components/rooms/Rooms";
-import Members from "./components/Members";
+import Members from "./components/members/Members";
 
 import TokenContext from "./assets/TokenContext";
 import Title from "./components/Title";

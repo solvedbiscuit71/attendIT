@@ -183,17 +183,17 @@ async def get_members_info(_id: str, verified: bool = Depends(verify_access)):
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)
 
-@app.delete("/members/{_id}")
-async def delete_members(_id: str, verified: bool = Depends(verify_access)):
+@app.delete("/members/{member_id}")
+async def delete_members(member_id: str, verified: bool = Depends(verify_access)):
     try:
-        result = await db.members.delete_one({"_id": _id})
-        # TODO: delete members_sessions associated with member
-        if result.deleted_count == 1:
-            return {"message": f"Successfully deleted {_id}"}
-        elif result.deleted_count == 0:
-            return JSONResponse(content={"message": "Record with _id does not exists"}, status_code=404)
+        member = await db.members.find_one({"_id": member_id}, {"ongoing_session_id": True})
+        if member is None:
+            return JSONResponse(content={"message": "Member with _id does not exists"}, status_code=404)
+        if member["ongoing_session_id"] is None:
+            await db.members_sessions.delete_many({"member_id": member_id})
+            await db.members.delete_one({"_id": member_id})
         else:
-            raise ConnectionFailure
+            return JSONResponse(content={"message": "Member has ongoing session"}, status_code=400)
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)
 

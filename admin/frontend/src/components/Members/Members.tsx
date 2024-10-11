@@ -1,9 +1,8 @@
 import { useContext, useEffect, useState } from 'react';
-import "./Members.css";
-import MemberList from './Members/MemberList';
-import MemberView from './Members/MemberView';
-import MemberCreate from './Members/MemberCreate';
-import TokenContext from '../assets/TokenContext';
+import MemberList from './MemberList';
+import MemberView from './MemberView';
+import MemberCreate from './MemberCreate';
+import TokenContext from '../../assets/TokenContext';
 
 interface Member {
   _id: string;
@@ -114,6 +113,9 @@ function Members({reLogin}: {reLogin: () => void}) {
       changeApp("/list");
     } else if (response.status == 401) {
       reLogin();
+    } else if (response.status == 400 || response.status == 404) {
+      const error = await response.json();
+      alert(error['message'])
     } else {
       const error = await response.json();
       console.error("Error:", error);
@@ -121,24 +123,28 @@ function Members({reLogin}: {reLogin: () => void}) {
     
   }
   
-  let content;
+  let title, content;
     switch (app) {
       case '/loading':
-        content = <p style={{marginBlock: '20px'}}>Loading...</p>
+        title = "Members";
+        content = <p className="loading condensed">Loading...</p>
         break;
       case '/list':
-        content = <MemberList members={membersData} onCreate={() => changeApp('/create')} onView={handleViewRequest} />
+        title = "Members";
+        content = <MemberList members={membersData} onCreate={() => changeApp('/create')} onView={handleViewRequest} onDelete={handleDelete} />
         break;
       case '/create':
+        title = "Add new member";
         content = <MemberCreate onSubmit={handleSubmit} />
         break;
       case '/view':
-        content = <MemberView data={viewData} onBack={() => changeApp('/list')} onDelete={handleDelete} />
+        title = "Member details";
+        content = <MemberView data={viewData} onBack={() => changeApp('/list')} onUpdate={(_id, payload) => console.log(_id, payload)} />
     }
   
   return (
     <div className="members">
-      <h1>Members</h1>
+      <h1 className='condensed bold'>{title}</h1>
       {content}
     </div>
   );

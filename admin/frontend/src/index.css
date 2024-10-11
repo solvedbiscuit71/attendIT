@@ -229,7 +229,7 @@ nav .list-container>ul li:has(.logout-icon) {
 
 .app main {
   flex-grow: 1;
-  overflow-y: auto;
+  overflow-y: scroll;
   
   display: flex;
   flex-direction: column;
@@ -448,4 +448,24 @@ nav .list-container>ul li:has(.logout-icon) {
 
 .room-create legend h2+div ul>li .trash-icon:hover {
   cursor: pointer;
+}
+
+.members {
+  padding: 18px 96px;
+}
+
+.members>h1 {
+  font-size: 2rem;
+  margin-bottom: 16px;
+  color: var(--b19);
+}
+
+.members>p.loading {
+  font-size: 1rem;
+  color: var(--b19);
+}
+
+.member-list>ul li a {
+  display: flex;
+  flex-direction: column;
 }

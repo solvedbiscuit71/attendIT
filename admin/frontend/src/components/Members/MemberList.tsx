@@ -1,15 +1,20 @@
 import { useState } from "react";
-import { MemberIcon } from "../../assets/Icons";
+import { TrashIcon } from "../../assets/Icons";
 
-interface Member {
-  _id: string;
-  name: string;
-};
+interface Params {
+  members: {
+    _id: string;
+    name: string;
+  }[];
+  onCreate: () => void;
+  onView: (name: string) => void;
+  onDelete: (_id: string) => void;
+}
 
-function MemberList({members, onCreate, onView}: {members: Member[], onCreate: () => void, onView: (name: string) => void}) {
+function MemberList({members, onCreate, onView, onDelete}: Params) {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredRooms = members.filter(member =>
+  const filteredMembers = members.filter(member =>
     member._id.toLowerCase().includes(searchTerm.toLowerCase()) || member.name.toLowerCase().includes(searchTerm.toLowerCase())
   ).sort((a, b) => {
     if (a._id < b._id) return -1;
@@ -19,27 +24,30 @@ function MemberList({members, onCreate, onView}: {members: Member[], onCreate: (
   const errorMessage = members.length == 0 ? "No member available..." : "No match found..."
 
   return (
-    <>
-      <div className="header">
+    <div className="room-list member-list">
+      <div className="filter">
         <input
           type="text"
           placeholder="Filter members..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <button className="new-button" onClick={onCreate}>New</button>
+        <button className="condensed fill" onClick={onCreate}>New</button>
       </div>
-      <ul className="list">
-        {filteredRooms.length > 0 ? filteredRooms.map(member => <li key={member._id}>
-          <a onClick={_ => onView(member._id)}>
-            <MemberIcon/>
-            <div>
-              <div className="member-id">{member._id}</div>
-              <div>{member.name}</div>
-            </div>
-          </a></li>) : <p>{errorMessage}</p>}
-      </ul>
-    </>
+      
+      {filteredMembers.length > 0 ? (
+        <ul>
+          {filteredMembers.map(member => (
+            <li key={member._id}>
+              <a className="condensed" onClick={_ => onView(member._id)}>
+                <span className="bold">{member._id}</span>
+                <span>{member.name}</span>
+              </a>
+              <TrashIcon onClick={() => onDelete(member._id)}/>
+            </li>))}
+        </ul>
+      ) : <p className="condensed">{errorMessage}</p>}
+    </div>
   )
 }
 
