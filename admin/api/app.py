@@ -47,7 +47,10 @@ class RoomData(BaseModel):
     password: str
     ongoing_session_id: str | None = None
     additional_info: dict = {}
-
+    
+class RoomPatchData(BaseModel):
+    password: str | None = None
+    additional_info: dict = {}
 
 CORRECT_USERNAME = os.getenv("CORRECT_USERNAME")
 CORRECT_PASSWORD = hash_password(os.getenv("CORRECT_PASSWORD"))
@@ -101,14 +104,34 @@ async def get_rooms_info(_id: str, verified: bool = Depends(verify_access)):
 @app.delete("/rooms/{_id}")
 async def delete_rooms(_id: str, verified: bool = Depends(verify_access)):
     try:
-        result = await db.rooms.delete_one({"_id": _id})
-        # TODO: delete the session associated with the rooms
-        if result.deleted_count == 1:
-            return {"message": f"Successfully deleted {_id}"}
-        elif result.deleted_count == 0:
-            return JSONResponse(content={"message": "Record with _id does not exists"}, status_code=404)
+        room = await db.rooms.find_one({"_id": _id}, {"ongoing_session_id": True})
+        if room is None:
+            return JSONResponse(content={"message": "Room with _id does not exists"}, status_code=404)
+        if room["ongoing_session_id"] is None:
+            result = await db.rooms.delete_one({"_id": _id})
         else:
-            raise ConnectionFailure
+            return JSONResponse(content={"message": "Room has ongoing session"}, status_code=400)
+    except (ServerSelectionTimeoutError, ConnectionFailure) as e:
+        return JSONResponse(content={"message": "Database Failure"}, status_code=500)
+
+@app.patch("/rooms/{_id}")
+async def update_rooms(body: RoomPatchData, _id: str, verified: bool = Depends(verify_access)):
+    try:
+        room = await db.rooms.find_one({"_id": _id}, {"_id": True})
+        if room is None:
+            return JSONResponse(content={"message": "Room with _id does not exists"}, status_code=404)
+        
+        update = {}
+        if body.password:
+            update['password'] = hash_password(body.password)
+        if body.additional_info:
+            update['additional_info'] = body.additional_info
+        
+        if update:
+            db.rooms.update_one({"_id": _id}, {"$set": update})
+            return {"message": "successfully updated"}
+        return {"message": "no update received"}
+
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)
 

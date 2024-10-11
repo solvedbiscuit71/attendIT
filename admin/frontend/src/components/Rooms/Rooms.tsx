@@ -104,10 +104,37 @@ function Rooms({reLogin}: {reLogin: () => void}) {
       setState("/list");
     } else if (response.status == 401) {
       reLogin();
+    } else if (response.status == 400 || response.status == 404) {
+      const error = await response.json();
+      alert(error['message'])
     } else {
       const error = await response.json();
       console.error("Error:", error);
     }
+  }
+  
+  const handleUpdate = async (_id: string, data: any) => {
+    const response = await fetch(fetchUrl + `/${_id}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      method: "PATCH",
+      body: JSON.stringify(data),
+    })
+    
+    if (response.ok) {
+      alert('Room details updated')
+    } else if (response.status == 401) {
+      reLogin();
+    } else if (response.status == 404) {
+      const error = await response.json();
+      alert(error['message'])
+    } else {
+      const error = await response.json();
+      console.error("Error:", error);
+    }
+
   }
   
   let title, content;
@@ -126,7 +153,7 @@ function Rooms({reLogin}: {reLogin: () => void}) {
         break;
       case '/view':
         title = "Room details";
-        content = <RoomView data={viewData} onBack={() => setState('/list')} />
+        content = <RoomView data={viewData} onBack={() => setState('/list')} onUpdate={handleUpdate} />
     }
   
   return (
