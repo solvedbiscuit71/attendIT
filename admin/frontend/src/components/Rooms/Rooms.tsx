@@ -1,9 +1,8 @@
 import { useContext, useEffect, useState } from 'react';
-import RoomCreate from './Rooms/RoomCreate';
-import RoomList from './Rooms/RoomList';
-import "./Rooms.css"
-import RoomView from './Rooms/RoomView';
-import TokenContext from '../assets/TokenContext';
+import RoomCreate from './RoomCreate';
+import RoomList from './RoomList';
+import RoomView from './RoomView';
+import TokenContext from '../../assets/TokenContext';
 
 interface Room {
   _id: string;
@@ -14,7 +13,7 @@ const addUrl = 'http://127.0.0.1:8000/rooms';
 
 function Rooms({reLogin}: {reLogin: () => void}) {
   const [roomsData, setRoomsData] = useState<Room[]>([]);
-  const [app, changeApp] = useState('/loading');
+  const [state, setState] = useState('/loading');
   const [viewData, setViewData] = useState(null);
   const token = useContext(TokenContext);
   
@@ -29,7 +28,7 @@ function Rooms({reLogin}: {reLogin: () => void}) {
       if (response.ok) {
         const data = await response.json()
         setRoomsData(data);
-        changeApp('/list');
+        setState('/list');
       } else if (response.status == 401) {
         reLogin();
       } else {
@@ -45,7 +44,7 @@ function Rooms({reLogin}: {reLogin: () => void}) {
   
   const handleSubmit = async (data: any) => {
     if (data == null) {
-      changeApp('/list');
+      setState('/list');
       return;      
     }
     
@@ -60,7 +59,7 @@ function Rooms({reLogin}: {reLogin: () => void}) {
     
     if (response.ok) {
       refreshRooms();
-      changeApp('/list');
+      setState('/list');
     } else if (response.status == 401) {
       reLogin();
     } else if (response.status == 409) {
@@ -82,7 +81,7 @@ function Rooms({reLogin}: {reLogin: () => void}) {
     if (response.ok) {
       const data = await response.json();
       setViewData(data);
-      changeApp("/view");
+      setState("/view");
     } else if (response.status == 401) {
       reLogin();
     } 
@@ -102,7 +101,7 @@ function Rooms({reLogin}: {reLogin: () => void}) {
     
     if (response.ok) {
       refreshRooms();
-      changeApp("/list");
+      setState("/list");
     } else if (response.status == 401) {
       reLogin();
     } else {
@@ -111,24 +110,28 @@ function Rooms({reLogin}: {reLogin: () => void}) {
     }
   }
   
-  let content;
-    switch (app) {
+  let title, content;
+    switch (state) {
       case '/loading':
-        content = <p style={{marginBlock: '20px'}}>Loading...</p>
+        title = "Rooms";
+        content = <p className="loading condensed">Loading...</p>
         break;
       case '/list':
-        content = <RoomList rooms={roomsData} onCreate={() => changeApp('/create')} onView={(_id) => handleViewRequest(_id)} />
+        title = "Rooms";
+        content = <RoomList rooms={roomsData} onCreate={() => setState('/create')} onView={(_id) => handleViewRequest(_id)} onDelete={handleDelete} />
         break;
       case '/create':
+        title = "Create new room";
         content = <RoomCreate onSubmit={handleSubmit}/>
         break;
       case '/view':
-        content = <RoomView data={viewData} onBack={() => changeApp('/list')} onDelete={handleDelete} />
+        title = "Room details";
+        content = <RoomView data={viewData} onBack={() => setState('/list')} />
     }
   
   return (
     <div className="rooms">
-      <h1>Rooms</h1>
+      <h1 className="condensed bold">{title}</h1>
       {content}
     </div>
   );

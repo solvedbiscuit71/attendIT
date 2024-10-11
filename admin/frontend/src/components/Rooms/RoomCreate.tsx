@@ -42,34 +42,46 @@ function RoomCreate({onSubmit}: {onSubmit: (data: any) => void}) {
 
   return (
     <div className="room-create">
-      <div className="room-field">
-        <label htmlFor="room-create-name">Name : </label>
-        <input type="text" id="room-create-name" value={name.toUpperCase()} onChange={(e) => setName(e.target.value)} />
-      </div>
-      <div className="room-field">
-        <label htmlFor="room-create-pwd">Password : </label>
-        <input type="password" id="room-create-pwd" value={passwd} onChange={(e) => setPasswd(e.target.value)} />
-      </div>
+      <legend>
+        <div className="field">
+          <label className="condensed bold" htmlFor="room-create-name">Name</label>
+          <input className="condensed" placeholder="AB1-101" type="text" id="room-create-name" value={name.toUpperCase()} onChange={(e) => setName(e.target.value)} />
+        </div>
+        <div className="field">
+          <label className="condensed bold" htmlFor="room-create-pwd">Password</label>
+          <input className="condensed" placeholder="*******" type="password" id="room-create-pwd" value={passwd} onChange={(e) => setPasswd(e.target.value)} />
+        </div>
 
+        
+        <div>
+          <h2 className="condensed bold">Additional Info</h2>
+          <div>
+            {
+              Object.keys(fields).length > 0 ?
+              <ul>
+                {Object.keys(fields).map(key => (
+                <li key={key}>
+                  <span className="key condensed bold">{key}:</span>
+                  <span className="value">{fields[key]}</span>
+                </li>))}
+              </ul>
+              : <p className="condensed">No additional info added...</p>
+            }
+            
+            <form onSubmit={addField} ref={formRef}>
+              <input className="condensed bold" type="text" name="key" id="key" placeholder='Key' />
+              <span className="condensed bold">:</span>
+              <input type="text" name="value" id="value" placeholder='Value' />
+              <button className="fill" type='submit'>Add</button>
+            </form>
+          </div>
+        </div>
+      </legend>
       
-      <h2>Additional Info</h2>
-      
-      {
-        Object.keys(fields).length > 0 &&
-        <ul>
-          {Object.keys(fields).map(key => <li key={key}><span>{key}</span> : "{fields[key]}"</li>)}
-        </ul>
-      }
-      
-      <form onSubmit={addField} ref={formRef}>
-        <input type="text" name="key" id="key" placeholder='Name' />
-        <span>:</span>
-        <input type="text" name="value" id="value" placeholder='Value' />
-        <button type='submit'>Add</button>
-      </form>
-      
-      <button className="red-button" onClick={() => onSubmit(null)}>Cancel</button>
-      <button onClick={handleSubmit}>Submit</button>
+      <div className="button-container">
+        <button className="stroke" onClick={() => onSubmit(null)}>Back</button>
+        <button className="fill" onClick={handleSubmit}>Submit</button>
+      </div>
     </div>
   )
 }

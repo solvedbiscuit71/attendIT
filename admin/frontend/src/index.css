@@ -2,13 +2,449 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: Arial, sans-serif;
+  font-family: "Open Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100;
+}
+
+:root {
+  --b19: #191919;
+  --we3: #e3e3e3;
+  --b0d: #0D0D0D;
+  --orange: #FF4C00;
+  --blue: #1174FF;
 }
 
 body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
   height: 100vh;
-  background-color: #f7f7f7;
+  background-color: var(--we3);
+}
+
+.condensed {
+  letter-spacing: -0.75px;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+button.stroke {
+  border-radius: 8px;
+  border: 2px solid var(--blue);
+  color: var(--blue);
+  
+  min-height: 38px;
+  padding: 6px 24px;
+}
+
+button.fill {
+  border-radius: 8px;
+  border: none;
+  background-color: var(--blue);
+  color: white;
+  
+  min-height: 38px;
+  padding: 6px 24px;
+}
+
+/* component styles */
+.title {
+  padding: 32px 0px;
+}
+
+.title h1 {
+  font-size: 2rem; 
+  text-align: center;
+  
+  color: var(--b19);
+}
+
+.title h1 span {
+  color: var(--orange);
+}
+
+.title p {
+  font-size: 1.5rem;
+  text-align: center;
+
+  color: var(--b19);
+}
+
+.credit footer {
+  font-size: 12px;
+  text-align: center;
+
+  padding: 32px;
+}
+
+.login {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.login .form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.login .admin-icon {
+  width: 96px;
+  height: 96px;
+  fill: var(--b19);
+}
+
+.login form legend {
+  border: 1.5px solid black;
+  border-radius: 4px;
+  box-shadow: 5px 5px 0px 0px var(--b19);
+  padding: 24px 12px;
+  margin-bottom: 16px;
+  min-width: 384px;
+  
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.login form legend>div {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.login form legend>div label {
+  font-size: 1.5rem;
+  color: var(--b19);
+}
+
+.login form legend>div input {
+  font-size: 14px;
+  color: var(--b19);
+  
+  padding: 10px 12px;
+  border: 1.5px solid var(--b19);
+  border-radius: 8px;
+  background-color: transparent;
+}
+
+.login form .button-container {
+  display: flex;
+  justify-content: end;
+  gap: 10px;
+}
+
+.app {
+  min-height: 100vh;
+  max-height: 100vh;
+  
+  display: flex;
+  align-items: stretch;
+}
+
+nav {
+  min-width: 200px;
+  flex-basis: 200px;
+  padding: 32px 16px;
+
+  background-color: var(--b0d);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+nav>hr {
+  border-color: var(--we3);
+}
+
+nav>h1 {
+  font-size: 1.5rem; 
+  color: var(--we3);
+}
+
+nav>h1:hover {
+  cursor: pointer;
+}
+
+nav>h1 span {
+  color: var(--orange);
+}
+
+nav>h2 {
+  font-size: 14px;
+  color: var(--we3);
+  text-transform: uppercase;
+}
+
+nav .list-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  
+  flex-grow: 1;
+}
+
+nav .list-container>ul {
+  padding: 0;
+  list-style: none;
+}
+
+nav .list-container>ul li {
+  padding: 5px 0;
+}
+
+nav .list-container>ul li a.selected {
+  color: var(--orange);
+}
+
+nav .list-container>ul li:hover {
+  cursor: pointer;
+}
+
+nav .list-container>ul li a {
+  font-size: 1.5rem;
+  color: var(--we3);
+}
+
+nav .list-container>ul li:has(.logout-icon) {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.chair {
+  width: 75px;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+
+.app main {
+  flex-grow: 1;
+  overflow-y: auto;
+  
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.app main>div:nth-of-type(2) {
+  flex-grow: 1;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  
+  padding: 48px 96px;
+}
+
+.hero p {
+  font-weight: 500;
+  font-style: italic;
+  text-align: center;
+}
+
+.rooms {
+  padding: 18px 96px;
+}
+
+.rooms>h1 {
+  font-size: 2rem;
+  margin-bottom: 16px;
+  color: var(--b19);
+}
+
+.rooms>p {
+  font-size: 1rem;
+  color: var(--b19);
+}
+
+.room-list .filter {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  
+  margin-bottom: 32px;
+}
+
+.room-list .filter input {
+  flex-grow: 1;
+  font-size: 14px;
+  color: var(--b19);
+  
+  padding: 10px 12px;
+  border: 1.5px solid var(--b19);
+  border-radius: 8px;
+  background-color: transparent;
+}
+
+.room-list .filter button {
+  font-size: 1rem;
+}
+
+.room-list>p {
+  font-size: 1rem;
+}
+
+.room-list>ul {
+  padding: 0;
+  list-style: none;
+  
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.room-list>ul li {
+  padding: 18px 12px;
+  
+  border-top: 1px solid var(--b0d);
+  border-bottom: 1px solid var(--b0d);
+  
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.room-list>ul li a {
+  font-size: 1rem;
+  color: var(--b19);
+}
+
+.room-list>ul li a:hover {
+  cursor: pointer;
+}
+
+.room-list>ul li .trash-icon {
+  fill: var(--b19);
+}
+
+.room-list>ul li .trash-icon:hover {
+  cursor: pointer;
+}
+
+.room-create legend {
+  border: 1.5px solid var(--b0d);
+  border-radius: 4px;
+  box-shadow: 5px 5px 0px 0px var(--b19);
+  padding: 12px 12px;
+  margin-bottom: 24px;
+  
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.room-create legend>.field {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 6px;
+}
+
+.room-create legend>.field label {
+  font-size: 20px;
+  color: var(--b19);
+}
+
+.room-create legend>.field input {
+  font-size: 14px;
+  color: var(--b19);
+  min-width: 360px;
+  
+  padding: 10px 12px;
+  border: 1.5px solid var(--b19);
+  border-radius: 8px;
+}
+
+.room-create legend h2 {
+  font-size: 20px;
+  color: var(--b19);
+}
+
+.room-create legend h2+div {
+  padding-left: 10px;
+}
+
+.room-create legend h2+div ul {
+  margin: 20px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.room-create legend h2+div ul>li {
+  font-size: 14px;
+  color: var(--b19);
+  
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.room-create legend h2+div p {
+  font-size: 14px;
+  margin: 20px 0;
+}
+
+.room-create legend form {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+}
+
+.room-create legend form input {
+  font-size: 14px;
+  color: var(--b19);
+  
+  padding: 10px 12px;
+  border: 1.5px solid var(--b19);
+  border-radius: 8px;
+}
+
+.room-create .button-container {
+  display: flex;
+  justify-content: end;
+  gap: 10px;
+}
+
+.room-view legend>h1 {
+  font-size: 24px;
+  color: var(--b19);
+  
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.room-view legend>h1 .badge {
+  font-size: 14px;
+  background-color: var(--orange);
+  color: white;
+  
+  padding: 5px;
+  border-radius: 8px;
+}
+
+.room-view legend h2+div ul>li .trash-icon {
+  fill: var(--b19);
+  width: 16px;
+  height: 16px;
+}
+
+.room-view legend h2+div ul>li .trash-icon:hover {
+  cursor: pointer;
 }

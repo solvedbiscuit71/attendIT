@@ -1,10 +1,16 @@
 import { useState } from "react";
+import { TrashIcon } from "../../assets/Icons";
 
-interface Room {
-  _id: string;
-};
+interface Params {
+  rooms: {
+    _id: string;
+  }[];
+  onCreate: () => void;
+  onView: (name: string) => void;
+  onDelete: (_id: string) => void;
+}
 
-function RoomList({rooms, onCreate, onView}: {rooms: Room[], onCreate: () => void, onView: (name: string) => void}) {
+function RoomList({rooms, onCreate, onView, onDelete}: Params) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredRooms = rooms.filter(room =>
@@ -13,20 +19,27 @@ function RoomList({rooms, onCreate, onView}: {rooms: Room[], onCreate: () => voi
   const errorMessage = rooms.length == 0 ? "No room available..." : "No match found..."
 
   return (
-    <>
-      <div className="header">
+    <div className="room-list">
+      <div className="filter">
         <input
           type="text"
           placeholder="Filter rooms..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <button className="new-button" onClick={onCreate}>New</button>
+        <button className="condensed fill" onClick={onCreate}>New</button>
       </div>
-      <ul className="list">
-        {filteredRooms.length > 0 ? filteredRooms.map(room => <li key={room._id}><a onClick={_ => onView(room._id)}>{room._id}</a></li>) : <p>{errorMessage}</p>}
-      </ul>
-    </>
+      
+      {filteredRooms.length > 0 ? (
+        <ul>
+          {filteredRooms.map(room => (
+            <li key={room._id}>
+              <a className="bold" onClick={_ => onView(room._id)}>{room._id}</a>
+              <span onClick={() => onDelete(room._id)}><TrashIcon/></span>
+            </li>))}
+        </ul>
+      ) : <p className="condensed">{errorMessage}</p>}
+    </div>
   )
 }
 
