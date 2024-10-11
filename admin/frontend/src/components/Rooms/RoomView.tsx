@@ -13,6 +13,8 @@ function RoomView({ data, onBack, onUpdate }: Params) {
   const formRef = useRef<HTMLFormElement>(null);
 
   const handleUpdate = async () => {
+    if (passwd.length > 0 && passwd.length < 5) return;
+
     const payload = {
       password: passwd.length == 0 ? null : passwd,
       additional_info: fields,
@@ -33,6 +35,8 @@ function RoomView({ data, onBack, onUpdate }: Params) {
         key: formElement.key.value,
         value: formElement.value.value,
       }
+
+      if (formData.key.length == 0 || formData.value.length == 0) return;
       
       formRef.current.reset();
 
@@ -75,7 +79,7 @@ function RoomView({ data, onBack, onUpdate }: Params) {
                 <li key={key}>
                   <span className="key condensed bold">{key}:</span>
                   <span className="value">{fields[key]}</span>
-                  <span onClick={_ => removeField(key)}><TrashIcon/></span>
+                  <TrashIcon onClick={() => removeField(key)}/>
                 </li>))
               : <p className="condensed">No additional info...</p>
             }

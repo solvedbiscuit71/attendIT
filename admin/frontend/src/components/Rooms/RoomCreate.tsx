@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { TrashIcon } from "../../assets/Icons";
 
 function RoomCreate({onSubmit}: {onSubmit: (data: any) => void}) {
   const [name, setName] = useState('')
@@ -20,6 +21,8 @@ function RoomCreate({onSubmit}: {onSubmit: (data: any) => void}) {
         value: formElement.value.value,
       }
       
+      if (formData.key.length == 0 || formData.value.length == 0) return;
+      
       formRef.current.reset();
 
       setFields((fields: any) => {
@@ -28,9 +31,20 @@ function RoomCreate({onSubmit}: {onSubmit: (data: any) => void}) {
     }
     
   }
+
+  const removeField = (toRemove: string) => {
+    console.log(toRemove)
+    setFields((fields: any) => Object.keys(fields).filter(key => key !== toRemove)
+      .reduce((obj, key) => {
+          //@ts-ignore
+          obj[key] = fields[key];
+          return obj;
+      }, {})
+    );
+  }
   
   const handleSubmit = async () => {
-    // if (name.length < 5 || passwd.length < 8) return;
+    if (name.length < 5 || passwd.length < 5) return;
     
     const data = {
       _id: name.toUpperCase(),
@@ -63,6 +77,7 @@ function RoomCreate({onSubmit}: {onSubmit: (data: any) => void}) {
                 <li key={key}>
                   <span className="key condensed bold">{key}:</span>
                   <span className="value">{fields[key]}</span>
+                  <TrashIcon onClick={() => removeField(key)}/>
                 </li>))}
               </ul>
               : <p className="condensed">No additional info added...</p>

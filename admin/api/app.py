@@ -101,14 +101,20 @@ async def get_rooms_info(_id: str, verified: bool = Depends(verify_access)):
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)
 
-@app.delete("/rooms/{_id}")
-async def delete_rooms(_id: str, verified: bool = Depends(verify_access)):
+@app.delete("/rooms/{room_id}")
+async def delete_rooms(room_id: str, verified: bool = Depends(verify_access)):
     try:
-        room = await db.rooms.find_one({"_id": _id}, {"ongoing_session_id": True})
+        room = await db.rooms.find_one({"_id": room_id}, {"ongoing_session_id": True})
         if room is None:
             return JSONResponse(content={"message": "Room with _id does not exists"}, status_code=404)
         if room["ongoing_session_id"] is None:
-            result = await db.rooms.delete_one({"_id": _id})
+            session_ids = await db.sessions.find({"room_id": room_id}, {"_id": True}).to_list(length=None)
+            session_ids = list(map(lambda doc: doc['_id'], session_ids))
+
+            await db.sessions_checkpoints.delete_many({"session_id": {"$in": session_ids}})
+            await db.members_sessions.delete_many({"session_id": {"$in": session_ids}})
+            await db.sessions.delete_many({"_id": {"$in": session_ids}})
+            await db.rooms.delete_one({"_id": room_id})
         else:
             return JSONResponse(content={"message": "Room has ongoing session"}, status_code=400)
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
@@ -128,7 +134,7 @@ async def update_rooms(body: RoomPatchData, _id: str, verified: bool = Depends(v
             update['additional_info'] = body.additional_info
         
         if update:
-            db.rooms.update_one({"_id": _id}, {"$set": update})
+            await db.rooms.update_one({"_id": _id}, {"$set": update})
             return {"message": "successfully updated"}
         return {"message": "no update received"}
 
@@ -146,7 +152,7 @@ async def add_rooms(body: RoomData, verified: bool = Depends(verify_access)):
         body.update({"_id": body["id"]})
         body.pop("id")
         body["password"] = hash_password(body["password"])
-        result = await db.rooms.insert_one(body)
+        await db.rooms.insert_one(body)
         return JSONResponse(content={"message": "Data created successfully"}, status_code=201)
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)

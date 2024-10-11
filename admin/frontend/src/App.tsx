@@ -120,7 +120,6 @@ function App() {
             <Credit/>
           </main>
         </div>
-        <img className="chair" src="/chair.png" alt="A wooden chair" />
       </>
       </TokenContext.Provider>
     )

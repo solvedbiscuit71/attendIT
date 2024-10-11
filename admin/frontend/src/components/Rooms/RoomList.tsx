@@ -35,7 +35,7 @@ function RoomList({rooms, onCreate, onView, onDelete}: Params) {
           {filteredRooms.map(room => (
             <li key={room._id}>
               <a className="bold" onClick={_ => onView(room._id)}>{room._id}</a>
-              <span onClick={() => onDelete(room._id)}><TrashIcon/></span>
+              <TrashIcon onClick={() => onDelete(room._id)}/>
             </li>))}
         </ul>
       ) : <p className="condensed">{errorMessage}</p>}

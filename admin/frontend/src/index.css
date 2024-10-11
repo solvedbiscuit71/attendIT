@@ -49,6 +49,14 @@ button.fill {
   padding: 6px 24px;
 }
 
+button.stroke:hover {
+  cursor: pointer;
+}
+
+button.fill:hover {
+  cursor: pointer;
+}
+
 /* component styles */
 .title {
   padding: 32px 0px;
@@ -217,13 +225,6 @@ nav .list-container>ul li:has(.logout-icon) {
   display: flex;
   gap: 10px;
   align-items: center;
-}
-
-.chair {
-  width: 75px;
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
 }
 
 .app main {
@@ -439,12 +440,12 @@ nav .list-container>ul li:has(.logout-icon) {
   border-radius: 8px;
 }
 
-.room-view legend h2+div ul>li .trash-icon {
+.room-create legend h2+div ul>li .trash-icon {
   fill: var(--b19);
   width: 16px;
   height: 16px;
 }
 
-.room-view legend h2+div ul>li .trash-icon:hover {
+.room-create legend h2+div ul>li .trash-icon:hover {
   cursor: pointer;
 }
