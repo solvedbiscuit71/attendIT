@@ -37,99 +37,108 @@ function SessionView({ data, onBack, onSecondary, onCheckpoint, onRefresh }: Pro
   }
 
   return (
-    <div className="session-view">
-      <div className="session-field session-id">
-        <label>Session Id : </label>
-        <input type="text" value={data.session_id} readOnly/>
-      </div>
+    <div className="room-create room-view">
+      <legend>
 
-      <div className="session-field">
-        <label>Timestamp : </label>
-        <input type="text" value={data.timestamp} readOnly/>
-      </div>
-      
-      { data.ongoing && <QRCodeSVG value={data.session_url} className="qr-code" /> }
+        <div className="details-container">
+          <div className="details">
+            <h1 className="condensed bold">Start Time: {data.timestamp}</h1>
+            <div className="additional-info">
+              <h2 className="condensed bold">Additional Info</h2>
+              <div>
+                {
+                  Object.keys(data.additional_info).length > 0 ?
+                    <ul>
+                      {
+                        Object.keys(data.additional_info).map(key => <li key={key}> <span className="key condensed bold">{key}:</span>
+                          <span className="value">{data.additional_info[key]}"</span>
+                        </li>)
+                      }
+                    </ul>
+                    : <p className="condensed">No additional info...</p>
+                }
+              </div>
+            </div>
+          </div>
+          {data.ongoing &&
+            <div className="qr-container">
+              <QRCodeSVG value={data.session_url} bgColor="#e3e3e3" fgColor="#191919" className="qr-code" />
+            </div>
+          }
+        </div>
 
-      <h2>Additional Info</h2>
-      
-      <ul>
-      {
-        (Object.keys(data.additional_info).length > 0) ?
-        Object.keys(data.additional_info).map(key => <li key={key}><span>{key}</span> : "{data.additional_info[key]}"</li>)
-        : <p>No additional info...</p>
-      }
-      </ul>
-      
-      <div className="session-header">
-        <h2>Attendees</h2>
-        {data.ongoing && <RefreshIcon onClick={() => onRefresh(data.session_id)} />}
-      </div>
-      
-      <div className="session-table">
-        <table>
-          <thead>
-            <tr>
-              <td>Member Id</td>
-              {
-                data.checkpoints.map(checkpoint => {
-                  return (
-                    <td>
-                      <div>{checkpoint.name}</div>
-                      <div>{checkpoint.expires_at}</div>
-                    </td>
-                  )
-                })
-              }
-            </tr>
-          </thead>
-          
-          <tbody>
-            {data.attendees.map(attendee => {
-              return (
-                <tr key={attendee.member_id}>
-                  <td>{attendee.member_id}</td>
+        <div className="attendees">
+          <div className="header">
+            <h2 className="condensed bold">Attendees</h2>
+            {data.ongoing && <RefreshIcon onClick={() => onRefresh(data.session_id)} />}
+          </div>
+          <div className="table">
+            <table>
+              <thead>
+                <tr>
+                  <td className="condensed bold">Member Id</td>
                   {
-                    data.checkpoints.map((checkpoint) => {
+                    data.checkpoints.map(checkpoint => {
                       return (
-                        <td>{attendee.checkpoint_ids.includes(checkpoint.name) ? "Present" : "Absent"}</td>
+                        <td className="condensed bold">
+                          <div>{checkpoint.name}</div>
+                          <div>{checkpoint.expires_at}</div>
+                        </td>
                       )
                     })
                   }
                 </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
+              </thead>
 
-      {
-        data.ongoing &&
-          <>
-          <h2>Checkpoints</h2>
+              <tbody>
+                {data.attendees.map(attendee => {
+                  return (
+                    <tr key={attendee.member_id}>
+                      <td>{attendee.member_id}</td>
+                      {
+                        data.checkpoints.map((checkpoint) => {
+                          return (
+                            <td>{attendee.checkpoint_ids.includes(checkpoint.name) ? "Present" : "Absent"}</td>
+                          )
+                        })
+                      }
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-          <form onSubmit={handleCheckpoint} ref={formRef}>
-            <div className="session-field">
-              <label htmlFor="checkpoint-name">Name : </label>
-              <input type="text" name="name" />
-            </div>
+        {
+          data.ongoing &&
+          <div className="checkpoints">
+            <h2 className="condensed bold">Checkpoints</h2>
 
-            <div className="session-field">
-              <label htmlFor="session-cooldown">Expires After : </label>
-              <select name="cooldown" id="session-cooldown">
-                <option value="5">5 minutes</option>
-                <option value="10">10 minutes</option>
-                <option value="15">15 minutes</option>
-                <option value="30">30 minutes</option>
-              </select>
-              <button className="button" type='submit'>Create</button>
-            </div>
-          </form>
-          </>
-      }
-      
-      <div className="button-container">
-        <button className="button" onClick={onBack}>Back</button>
-        <button className="button red" onClick={_ => onSecondary(data.session_id, data.ongoing)}>{data.ongoing ? "End" : "Delete"}</button>
+            <form onSubmit={handleCheckpoint} ref={formRef}>
+              <div className="field">
+                <label className="condensed bold" htmlFor="checkpoint-name">Name:</label>
+                <input className="condensed" type="text" name="name" placeholder="Break" />
+              </div>
+
+              <div className="field">
+                <label className="condensed bold" htmlFor="session-cooldown">Expires After:</label>
+                <select className="condensed" name="cooldown" id="session-cooldown">
+                  <option value="5">5 minutes</option>
+                  <option value="10">10 minutes</option>
+                  <option value="15">15 minutes</option>
+                  <option value="30">30 minutes</option>
+                </select>
+                <button className="fill" type='submit'>Create</button>
+              </div>
+            </form>
+          </div>
+        }
+      </legend>
+
+      <div className={`button-container ${data.ongoing ? "left" : "right"}`}>
+        <button className="stroke" onClick={onBack}>Back</button>
+        {data.ongoing && <button className="fill" onClick={_ => onSecondary(data.session_id, data.ongoing)}>End</button>}
       </div>
     </div>
   )

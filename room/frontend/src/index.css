@@ -372,11 +372,25 @@ nav .list-container>ul li:has(.logout-icon) {
   cursor: pointer;
 }
 
+.room-list .history>ul li a:hover {
+  cursor: pointer;
+}
+
+.room-list .history>ul li .trash-icon {
+  fill: var(--b19);
+}
+
+.room-list .history>ul li .trash-icon:hover {
+  cursor: pointer;
+}
+
+/* room create */
+
 .room-create legend {
   border: 1.5px solid var(--b0d);
   border-radius: 4px;
   box-shadow: 5px 5px 0px 0px var(--b19);
-  padding: 12px 12px;
+  padding: 18px 12px;
   margin-bottom: 24px;
   
   display: flex;
@@ -384,44 +398,102 @@ nav .list-container>ul li:has(.logout-icon) {
   gap: 24px;
 }
 
-.room-create legend .field {
-  display: flex;
-  flex-direction: column;
-  align-items: start;
-  gap: 6px;
-}
-
 .room-create legend .field label {
-  font-size: 20px;
+  font-size: 16px;
   color: var(--b19);
+  margin-right: 10px;
 }
 
-.room-create legend .field input {
+.room-create legend .field select {
   font-size: 14px;
   color: var(--b19);
-  min-width: 360px;
   
-  padding: 10px 12px;
-  border: 1.5px solid var(--b19);
-  border-radius: 8px;
+  border: 1px solid var(--b0d);
+  box-shadow: 2px 2px 0px 0px var(--b19);
+
+  border-radius: 4px;
 }
 
-.room-create legend h2 {
+.room-create legend .field select:hover {
+  cursor: pointer;
+}
+
+.room-create .participants>h2 {
+  font-size: 20px;  
+  color: var(--b19);
+  margin-bottom: 20px;
+}
+
+.room-create .participants>p {
+  color: var(--b19);
+  font-size: 14px;
+}
+
+.room-create .participants>ul {
+  padding: 0;
+  list-style: none;
+  
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.room-create .participants>ul li {
+  padding: 12px 12px;
+  
+  border-top: 1px solid var(--b0d);
+  border-bottom: 1px solid var(--b0d);
+  
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.room-create .participants>ul li input[type='checkbox'] {
+  width: 14px;
+  height: 14px;
+}
+
+.room-create .participants>ul li input[type='checkbox']:hover {
+  cursor: pointer;
+}
+
+.room-create .participants>ul li label {
+  font-size: 14px;
+  color: var(--b19);
+  
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.room-create .participants>ul li label:hover {
+  cursor: pointer;
+}
+
+.room-create legend .additional-info>h2 {
   font-size: 20px;
   color: var(--b19);
 }
 
-.room-create legend h2+div {
+.room-create legend .additional-info>h2+div {
   padding-left: 10px;
 }
 
-.room-create legend h2+div ul {
+.room-create legend .additional-info>h2+div p {
+  color: var(--b19);
+  font-size: 14px;
+  margin: 20px 0px;
+}
+
+.room-create legend .additional-info>h2+div ul {
   margin: 20px 0;
   padding: 0;
   list-style: none;
 }
 
-.room-create legend h2+div ul>li {
+.room-create legend .additional-info>h2+div ul>li {
   font-size: 14px;
   color: var(--b19);
   
@@ -431,22 +503,26 @@ nav .list-container>ul li:has(.logout-icon) {
   gap: 6px;
 }
 
-.room-create legend h2+div p {
-  font-size: 14px;
-  margin: 20px 0;
+.room-create legend .additional-info>h2+div ul>li .trash-icon {
+  fill: var(--b19);
+  width: 16px;
+  height: 16px;
 }
 
-.room-create legend form {
+.room-create legend .additional-info>h2+div ul>li .trash-icon:hover {
+  cursor: pointer;
+}
+
+.room-create legend .additional-info>h2+div form {
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 5px;
 }
 
-.room-create legend form input {
+.room-create legend .additional-info>h2+div form>input {
   font-size: 14px;
   color: var(--b19);
-  
   padding: 10px 12px;
   border: 1.5px solid var(--b19);
   border-radius: 8px;
@@ -458,9 +534,41 @@ nav .list-container>ul li:has(.logout-icon) {
   gap: 10px;
 }
 
-.room-view legend>h1 {
+.room-view h1 {
   font-size: 24px;
   color: var(--b19);
+  margin-bottom: 20px;
+}
+
+.room-view .details-container {
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+  gap: 20px;
+}
+
+.room-view .qr-container {
+  border: 1.5px solid black;
+  border-radius: 4px;
+  box-shadow: 2px 2px 0px 0px var(--b19);
+  padding: 12px 12px;
+}
+
+.room-view legend .additional-info>h2+div p {
+  margin-bottom: 0px;
+}
+
+.room-view legend .additional-info>h2+div ul {
+  margin-bottom: 0px;
+}
+
+.room-view h2 {
+  font-size: 20px;
+  color: var(--b19);
+}
+
+.room-view .attendees .header {
+  margin-bottom: 14px;
   
   display: flex;
   flex-direction: row;
@@ -468,12 +576,67 @@ nav .list-container>ul li:has(.logout-icon) {
   gap: 10px;
 }
 
-.room-create legend h2+div ul>li .trash-icon {
+.room-view .attendees .header .refresh-icon {
   fill: var(--b19);
-  width: 16px;
-  height: 16px;
 }
 
-.room-create legend h2+div ul>li .trash-icon:hover {
+.room-view .attendees .header .refresh-icon:hover {
   cursor: pointer;
+}
+
+.room-view .attendees .table {
+  overflow-x: auto;
+}
+
+.room-view .attendees table {
+  border-collapse: collapse;
+}
+
+.room-view .attendees td, th {
+  font-size: 14px;
+  color: var(--b19);
+
+  min-width: 140px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--b0d);
+}
+
+.room-view .button-container.right {
+  justify-content: start;
+}
+
+.room-view .checkpoints h2 {
+  margin-bottom: 14px;
+}
+
+.room-view .checkpoints .field button {
+  font-size: 14px;
+  min-height: min-content;
+  padding: 4px 8px;
+}
+
+.room-view .checkpoints form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.room-view .checkpoints .field label {
+  font-size: 14px;
+  color: var(--b19);
+  margin-right: 10px;
+}
+
+.room-view .checkpoints .field input {
+  font-size: 14px;
+  color: var(--b19);
+  
+  padding: 4px 8px;
+  border: 1px solid var(--b19);
+  border-radius: 8px;
+}
+
+.room-view .checkpoints .field select {
+  font-size: 14px;
+  margin-right: 10px;
 }

@@ -113,7 +113,7 @@ function MemberCreate({onSubmit}: {onSubmit: (data: any) => void}) {
 
         <div className="button-container">
           <button className="stroke" onClick={() => onSubmit(null)}>Back</button>
-          <button className="fill" onClick={handleSubmit}>Submit</button>
+          <button className="fill" onClick={handleSubmit}>Create</button>
         </div>
       </div>
     </>

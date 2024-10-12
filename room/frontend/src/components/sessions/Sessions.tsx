@@ -198,7 +198,7 @@ function Sessions({reLogin}: {reLogin: () => void}) {
       case '/list':
         if (sessionData) {
           title = "Sessions";
-          content = <SessionList sessions={sessionData} onCreate={handleCreate} onView={handleViewRequest} />
+          content = <SessionList sessions={sessionData} onCreate={handleCreate} onView={handleViewRequest} onDelete={(_id: string) => handleSecondary(_id, false)} />
         }
         break;
       case '/create':

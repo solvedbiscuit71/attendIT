@@ -2,7 +2,14 @@ import { useState } from "react";
 import { TrashIcon } from "../../assets/Icons";
 import { SessionListType } from "./Sessions";
 
-function SessionList({ sessions, onCreate, onView }: { sessions: SessionListType, onCreate: () => void, onView: (_id: string) => void }) {
+interface Params {
+ sessions: SessionListType;
+ onCreate: () => void;
+ onView: (_id: string) => void;
+ onDelete: (_id: string) => void;
+}
+
+function SessionList({ sessions, onCreate, onView, onDelete }: Params) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredSessions = sessions.history.filter(session => session.timestamp.toLowerCase().includes(searchTerm.toLowerCase())).sort().reverse();
@@ -35,7 +42,7 @@ function SessionList({ sessions, onCreate, onView }: { sessions: SessionListType
             {filteredSessions.map(session => (
               <li key={session._id}>
                 <a className="bold" onClick={_ => onView(session._id)}>{session.timestamp}</a>
-                <TrashIcon onClick={() => { }} />
+                <TrashIcon onClick={() => onDelete(session._id)} />
               </li>))}
           </ul>
         ) : <p className="condensed">{filteredSessionsError}</p>}
