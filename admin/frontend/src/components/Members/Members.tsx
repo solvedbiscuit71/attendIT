@@ -81,6 +81,43 @@ function Members({reLogin}: {reLogin: () => void}) {
     }
   }
 
+  const handleUpdate = async (member_id: string, data: any) => {
+    if (data == null) {
+      changeApp('/list');
+      return;      
+    }
+    
+    const formData = new FormData();
+    if (data.name !== null)
+      formData.append("name", data.name)
+    if (data.password !== null)
+      formData.append("password", data.password)
+    if (data.additional_info !== null)
+      formData.append("additional_info", JSON.stringify(data.additional_info))
+    if (data.image !== null)
+      formData.append("image", data.image)
+    
+    const response = await fetch(addUrl + `/${member_id}`, {
+        method: 'PATCH',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+        },
+        body: formData
+    });
+    
+    if (response.ok) {
+      alert('Member details updated')
+    } else if (response.status == 401) {
+      reLogin();
+    } else if (response.status == 404 || response.status == 406) {
+      const error = await response.json();
+      alert(error.message)
+    } else {
+      const error = await response.json();
+      console.error("Error:", error)
+    }
+  }
+
   const handleViewRequest = async (_id: string) => {
     const response = await fetch(fetchUrl + `/${_id}`, {
       headers: {
@@ -139,7 +176,7 @@ function Members({reLogin}: {reLogin: () => void}) {
         break;
       case '/view':
         title = "Member details";
-        content = <MemberView data={viewData} onBack={() => changeApp('/list')} onUpdate={(_id, payload) => console.log(_id, payload)} />
+        content = <MemberView data={viewData} onBack={() => { refreshMembers(); changeApp('/list'); }} onUpdate={handleUpdate} />
     }
   
   return (

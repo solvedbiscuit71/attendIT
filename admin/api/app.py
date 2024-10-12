@@ -244,3 +244,59 @@ async def add_members(image: UploadFile, member_id: str = Form(alias="_id"), nam
         return JSONResponse(content={"message": "Data created successfully"}, status_code=201)
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)
+
+@app.patch("/members/{member_id}")
+async def update_members(member_id: str, image: UploadFile | None = None, name: str = Form(default=None), password: str = Form(default=None), additional_info: str = Form(default=None), verified: bool = Depends(verify_access)):
+    try:
+        existing_record = await db.members.find_one({"_id": member_id})
+        if existing_record is None:
+            return JSONResponse(content={"message": "Member with _id doesn't exists"}, status_code=404)
+        
+        body = {}
+        if image:
+            _, extension = image.content_type.split('/')
+            filename = f'tmp.{extension}'
+            with open(filename, 'wb') as file:
+                content = await image.read()
+                file.write(content)
+                
+            unknown_image = Image.open(filename)
+            unknown_image = ImageOps.exif_transpose(unknown_image)
+
+            width, height = unknown_image.size
+
+            new_width = int(width * 0.25)
+            new_height = int(height * 0.25)
+
+            unknown_image = unknown_image.resize((new_width, new_height))
+            unknown_image = np.array(unknown_image)
+
+            face_locations = face_recognition.face_locations(unknown_image)
+            unknown_encoding = face_recognition.face_encodings(unknown_image, face_locations)
+
+            if len(face_locations) == 0:
+                print("[LOG] No faces detected")
+                return JSONResponse(content={"message": "No face detected"}, status_code=406)
+            
+            if len(face_locations) > 1:
+                print("[LOG] More than one face detected")
+                return JSONResponse(content={"message": "More than one face detected"}, status_code=406)
+            
+            body['encoding'] = unknown_encoding[0].tobytes()
+        
+        if name:
+            body['name'] = name
+
+        if password:
+            body['password'] = hash_password(password)
+            
+        if additional_info:
+            body['additional_info'] = json.loads(additional_info)
+
+        if body:
+            print(body)
+            await db.members.update_one({"_id": member_id}, {"$set": body})
+            return {"message": "successfully updated"}
+        return {"message": "no update received"}
+    except (ServerSelectionTimeoutError, ConnectionFailure) as e:
+        return JSONResponse(content={"message": "Database Failure"}, status_code=500)

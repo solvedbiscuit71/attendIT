@@ -11,6 +11,7 @@ export default function MemberView({ data, onBack, onUpdate }: Params) {
   const [name, setName] = useState(data.name)
   const [passwd, setPasswd] = useState('')
   const [fields, setFields] = useState<any>(data.additional_info)
+  const [file, setFile] = useState<File | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   const handleUpdate = async () => {
@@ -19,9 +20,12 @@ export default function MemberView({ data, onBack, onUpdate }: Params) {
     const payload = {
       name: (name.length == 0 || (name == data.name)) ? null : name,
       password: passwd.length == 0 ? null : passwd,
+      image: file,
       additional_info: fields,
     }
     onUpdate(data._id, payload);
+   
+    setPasswd('');
   }
 
   const addField = (event: React.FormEvent) => {
@@ -60,19 +64,30 @@ export default function MemberView({ data, onBack, onUpdate }: Params) {
   }
 
   return (
-    <div className="room-create room-view">
+    <div className="room-create room-view member-create">
       <legend>
         <h1 className="condensed bold">
         <span> ID: {data._id} </span>
         {data.ongoing_session_id !== null ? <span className="badge">Ongoing</span> : undefined}
         </h1>
-        <div className="field">
-          <label className="condensed bold" htmlFor="room-create-name">Name</label>
-          <input className="condensed" placeholder="Enter name..." type="text" id="room-create-name" value={name} onChange={(e) => setName(e.target.value)} />
-        </div>
-        <div className="field">
-          <label className="condensed bold" htmlFor="room-create-pwd">Password</label>
-          <input className="condensed" placeholder="Enter new password..." type="password" id="room-create-pwd" value={passwd} onChange={(e) => setPasswd(e.target.value)} />
+        <div className="input-container">
+          <div className="inputs">
+            <div className="field">
+              <label className="condensed bold" htmlFor="room-create-name">Name</label>
+              <input className="condensed" placeholder="Enter name..." type="text" id="room-create-name" value={name} onChange={(e) => setName(e.target.value)} />
+            </div>
+            <div className="field">
+              <label className="condensed bold" htmlFor="room-create-pwd">Password</label>
+              <input className="condensed" placeholder="Enter new password..." type="password" id="room-create-pwd" value={passwd} onChange={(e) => setPasswd(e.target.value)} />
+            </div>
+            <div className="field">
+              <label className="condensed bold" htmlFor="member-create-image">Photo</label>
+              <input type="file" name="image" id="member-create-image" onChange={(e) => setFile(e.target.files && e.target.files?.length > 0 ? e.target.files[0] : null)} required />
+            </div>
+          </div>
+          <div className="image">
+            {file && <img className="member-image" src={URL.createObjectURL(file)} alt="Member Photo" />}
+          </div>
         </div>
 
         <div>

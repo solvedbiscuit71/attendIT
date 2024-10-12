@@ -20,6 +20,7 @@ function RoomView({ data, onBack, onUpdate }: Params) {
       additional_info: fields,
     }
     onUpdate(data._id, payload);
+    setPasswd('');
   }
 
   const addField = (event: React.FormEvent) => {
