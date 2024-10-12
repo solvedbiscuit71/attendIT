@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { SessionViewType } from "../Sessions";
+import { SessionViewType } from "./Sessions";
 import { QRCodeSVG } from "qrcode.react";
 import { RefreshIcon } from "../../assets/Icons";
 

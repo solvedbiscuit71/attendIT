@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { HistoryIcon, OnGoingIcon } from "../../assets/Icons";
-import { SessionListType } from "../Sessions";
+import { SessionListType } from "./Sessions";
 
 function SessionList({ sessions, onCreate, onView }: { sessions: SessionListType, onCreate: () => void, onView: (_id: string) => void }) {
   const [searchTerm, setSearchTerm] = useState('');

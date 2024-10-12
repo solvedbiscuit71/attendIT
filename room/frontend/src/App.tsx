@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from "react";
-import { HomeIcon, LogoutIcon, RoomsIcon, SessionIcon } from "./assets/Icons";
+import { LogoutIcon } from "./assets/Icons";
 
 import Login from "./components/Login";
-import Sessions from "./components/Sessions";
+import Sessions from "./components/sessions/Sessions";
 
 import TokenContext from "./assets/TokenContext";
-import "./App.css"
+import Title from "./components/Title";
+import Credit from "./components/Credit";
+import Hero from "./components/Hero";
 
 const refreshUrl = 'http://127.0.0.1:8001/token/refresh';
 
@@ -27,17 +29,6 @@ function useInterval(callback: any, delay: number) {
       return () => clearInterval(id);
     }
   }, [delay]);
-}
-
-function Hero() {
-  return (
-    <div className="hero">
-      <h1>Welcome to AttendIT's Room Portal</h1>
-      <p>Delegating attendance to the attendees.</p>
-      
-      <img src="/classroom.jpeg" alt="A Image of a classroom" />
-    </div>
-  )
 }
 
 function App() {
@@ -97,20 +88,30 @@ function App() {
     
     return (
       <TokenContext.Provider value={token}>
-        <div className="container">
-          <nav className="navbar fixed">
+        <div className="app">
+          <nav>
+            <h1 className="condensed bold" onClick={_ => changeApp('/home')}>Attend<span>IT</span></h1>
+            <hr/>
+            <h2 className="condensed bold">{roomId}</h2>
+            <div className="list-container">
             <ul>
-              <li onClick={_ => changeApp('/home')}><a><HomeIcon />Home</a></li>
-              <li onClick={_ => changeApp('/sessions')}><a><SessionIcon />Sessions</a></li>
+              <li onClick={_ => changeApp('/sessions')}>
+                <a className={app == '/sessions' ? 'selected' : undefined}>Sessions</a>
+              </li>
             </ul>
-
+            
             <ul>
-              <li className="no-hover"><a style={{ alignItems: 'center' }}><RoomsIcon />{roomId}</a></li>
-              <li onClick={onLogout}><a><LogoutIcon />Logout</a></li>
+              <li onClick={onLogout}>
+                <a>Logout</a>
+                <LogoutIcon/>
+              </li>
             </ul>
+            </div>
           </nav>
-          <main className="content">
+          <main>
+            <Title/>
             {content}
+            <Credit/>
           </main>
         </div>
       </TokenContext.Provider>

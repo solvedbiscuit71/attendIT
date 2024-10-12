@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { MemberType } from "../Sessions";
+import { MemberType } from "./Sessions";
 
 
 function SessionCreate({onSubmit, membersData}: {onSubmit: (data: any) => void, membersData: MemberType[]}) {

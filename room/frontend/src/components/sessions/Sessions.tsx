@@ -1,11 +1,9 @@
 import { useContext, useEffect, useState } from 'react';
-import SessionList from './Session/SessionList';
-import SessionCreate from './Session/SessionCreate';
+import SessionList from './SessionList';
+import SessionCreate from './SessionCreate';
 
-import TokenContext from '../assets/TokenContext';
-import SessionView from './Session/SessionView';
-
-import "./Sessions.css"
+import TokenContext from '../../assets/TokenContext';
+import SessionView from './SessionView';
 
 interface SessionListType {
   onGoing: { _id: string; timestamp: string; } | null;
@@ -191,28 +189,35 @@ function Sessions({reLogin}: {reLogin: () => void}) {
     }
   }
   
-  let content;
+  let title, content;
     switch (app) {
       case '/loading':
+        title = "Sessions";
         content = <p style={{marginBlock: '20px'}}>Loading...</p>
         break;
       case '/list':
-        if (sessionData)
+        if (sessionData) {
+          title = "Sessions";
           content = <SessionList sessions={sessionData} onCreate={handleCreate} onView={handleViewRequest} />
+        }
         break;
       case '/create':
-        if (memberData)
+        if (memberData) {
+          title = "Create new session";
           content = <SessionCreate onSubmit={handleSubmit} membersData={memberData} />
+        }
         break;
       case '/view':
-        if (viewData)
+        if (viewData) {
+          title = "Session details";
           content = <SessionView data={viewData} onBack={() => changeApp("/list")} onSecondary={handleSecondary} onCheckpoint={handleCheckpoint} onRefresh={handleViewRequest} />
+        }
         break;
     }
   
   return (
-    <div className="sessions">
-      <h1>Sessions</h1>
+    <div className="rooms">
+      <h1 className="condensed bold">{title}</h1>
       {content}
     </div>
   );
