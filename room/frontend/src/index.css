@@ -57,6 +57,10 @@ button.fill:hover {
   cursor: pointer;
 }
 
+button:disabled:hover {
+  cursor: no-drop;
+}
+
 /* component styles */
 .title {
   padding: 32px 0px;
@@ -292,11 +296,45 @@ nav .list-container>ul li:has(.logout-icon) {
   font-size: 1rem;
 }
 
-.room-list>p {
-  font-size: 1rem;
+.room-list>div h2 {
+  font-size: 20px;
+  color: var(--b19);
+  
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  align-items: center;
 }
 
-.room-list>ul {
+.room-list .history h2 {
+  margin-bottom: 20px;
+}
+
+.room-list .ongoing {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: end;
+  
+  margin-bottom: 20px;
+}
+
+.room-list .ongoing .badge {
+  font-size: 14px;
+  background-color: var(--orange);
+  color: white;
+  
+  padding: 5px 10px;
+  border-radius: 8px;
+  position: relative;
+  top: 2.5px;
+}
+
+.room-list .ongoing a:hover {
+  cursor: pointer;
+}
+
+.room-list .history>ul {
   padding: 0;
   list-style: none;
   
@@ -305,7 +343,7 @@ nav .list-container>ul li:has(.logout-icon) {
   gap: 4px;
 }
 
-.room-list>ul li {
+.room-list .history>ul li {
   padding: 18px 12px;
   
   border-top: 1px solid var(--b0d);
@@ -317,20 +355,20 @@ nav .list-container>ul li:has(.logout-icon) {
   align-items: center;
 }
 
-.room-list>ul li a {
+.room-list .history>ul li a {
   font-size: 1rem;
   color: var(--b19);
 }
 
-.room-list>ul li a:hover {
+.room-list .history>ul li a:hover {
   cursor: pointer;
 }
 
-.room-list>ul li .trash-icon {
+.room-list .history>ul li .trash-icon {
   fill: var(--b19);
 }
 
-.room-list>ul li .trash-icon:hover {
+.room-list .history>ul li .trash-icon:hover {
   cursor: pointer;
 }
 
@@ -430,15 +468,6 @@ nav .list-container>ul li:has(.logout-icon) {
   gap: 10px;
 }
 
-.room-view legend>h1 .badge {
-  font-size: 14px;
-  background-color: var(--orange);
-  color: white;
-  
-  padding: 5px;
-  border-radius: 8px;
-}
-
 .room-create legend h2+div ul>li .trash-icon {
   fill: var(--b19);
   width: 16px;
@@ -447,67 +476,4 @@ nav .list-container>ul li:has(.logout-icon) {
 
 .room-create legend h2+div ul>li .trash-icon:hover {
   cursor: pointer;
-}
-
-.members {
-  padding: 18px 96px;
-}
-
-.members>h1 {
-  font-size: 2rem;
-  margin-bottom: 16px;
-  color: var(--b19);
-}
-
-.members>p.loading {
-  font-size: 1rem;
-  color: var(--b19);
-}
-
-.member-list>ul li a {
-  display: flex;
-  flex-direction: column;
-}
-
-.member-create legend .field>input[type='file']::file-selector-button {
-  letter-spacing: -0.75px;
-
-  border-radius: 8px;
-  border: 2px solid var(--blue);
-  color: var(--blue);
-  
-  padding: 2px 8px;
-  margin-right: 10px;
-}
-
-.member-create legend .field>input[type='file']::file-selector-button:hover {
-  cursor: pointer;
-}
-
-.member-create legend .input-container {
-  display: flex;
-  flex-direction: row;
-  gap: 20px;
-  align-items: stretch;
-}
-
-.member-create legend .input-container>.inputs {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.member-create legend .input-container>.image {
-  flex-grow: 1;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.member-create legend .input-container>.image img {
-  max-height: 200px;
-  
-  border-radius: 4px;
-  box-shadow: 6px 6px 0px 0px var(--b19);
 }
