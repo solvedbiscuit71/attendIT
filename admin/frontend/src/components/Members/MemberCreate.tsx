@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { TrashIcon } from "../../assets/Icons";
 
 function MemberCreate({onSubmit}: {onSubmit: (data: any) => void}) {
   const [id, setId] = useState('')
@@ -30,13 +31,20 @@ function MemberCreate({onSubmit}: {onSubmit: (data: any) => void}) {
     }
     
   }
+
+  const removeField = (toRemove: string) => {
+    console.log(toRemove)
+    setFields((fields: any) => Object.keys(fields).filter(key => key !== toRemove)
+      .reduce((obj, key) => {
+          //@ts-ignore
+          obj[key] = fields[key];
+          return obj;
+      }, {})
+    );
+  }
   
   const handleSubmit = async () => {
-    // if (name.length < 5 || passwd.length < 8) return;
-    
-    if (file === null) {
-      return;
-    }
+    if (id.length < 5 || passwd.length < 5 || file === null) return;
     
     const data = {
       _id: id.toUpperCase(),
@@ -49,47 +57,66 @@ function MemberCreate({onSubmit}: {onSubmit: (data: any) => void}) {
   }
 
   return (
-    <div className="member-create">
-      <div className="member-field">
-        <label htmlFor="member-create-id">ID : </label>
-        <input type="text" id='member-create-id' value={id.toUpperCase()} onChange={(e) => setId(e.target.value)} />
-      </div>
-      <div className="member-field">
-        <label htmlFor="member-create-name">Name : </label>
-        <input type="text" id='member-create-name' value={name} onChange={(e) => setName(e.target.value)} />
-      </div>
-      <div className="member-field">
-        <label htmlFor="member-create-pwd">Password : </label>
-        <input type="password" id='member-create-pwd' value={passwd} onChange={(e) => setPasswd(e.target.value)} />
-      </div>
-      
-      <div className="member-field">
-        <label htmlFor="member-create-image">Photo : </label>
-        <input type="file" name="image" id="member-create-image" onChange={(e) => setFile(e.target.files && e.target.files?.length > 0 ? e.target.files[0] : null)} required />
-      </div>
-      
-      {file && <img className="member-image" src={URL.createObjectURL(file)} alt="Member Photo" />}
+    <>
+      <div className="room-create member-create">
+        <legend>
+        <div className="input-container">
+          <div className="inputs">
+            <div className="field">
+              <label className="condensed bold" htmlFor="member-create-id">ID</label>
+              <input className="condensed" placeholder="CSE22047" type="text" id="member-create-id" value={id.toUpperCase()} onChange={(e) => setId(e.target.value)} />
+            </div>
+            <div className="field">
+              <label className="condensed bold" htmlFor="member-create-name">Name</label>
+              <input className="condensed" placeholder="Praveen" type="text" id="member-create-name" value={name} onChange={(e) => setName(e.target.value)} />
+            </div>
+            <div className="field">
+              <label className="condensed bold" htmlFor="member-create-pwd">Password</label>
+              <input className="condensed" placeholder="*******" type="password" id="member-create-pwd" value={passwd} onChange={(e) => setPasswd(e.target.value)} />
+            </div>
+            <div className="field">
+              <label className="condensed bold" htmlFor="member-create-image">Photo</label>
+              <input type="file" name="image" id="member-create-image" onChange={(e) => setFile(e.target.files && e.target.files?.length > 0 ? e.target.files[0] : null)} required />
+            </div>
+          </div>
+          <div className="image">
+            {file && <img className="member-image" src={URL.createObjectURL(file)} alt="Member Photo" />}
+          </div>
+        </div>
 
-      
-      <h2>Additional Info</h2>
-      
-      {
-        Object.keys(fields).length > 0 &&
-        <ul>
-          {Object.keys(fields).map(key => <li key={key}><span>{key}</span> : "{fields[key]}"</li>)}
-        </ul>
-      }
-      
-      <form onSubmit={addField} ref={formRef}>
-        <input type="text" name="key" id="key" placeholder='Name' />
-        <span>:</span>
-        <input type="text" name="value" id="value" placeholder='Value' />
-        <button className="button" type='submit'>Add</button>
-      </form>
-      
-      <button className="button red" onClick={() => onSubmit(null)}>Cancel</button>
-      <button className="button" onClick={handleSubmit}>Submit</button>
-    </div>
+
+          <div>
+            <h2 className="condensed bold">Additional Info</h2>
+            <div>
+              {
+                Object.keys(fields).length > 0 ?
+                  <ul>
+                    {Object.keys(fields).map(key => (
+                      <li key={key}>
+                        <span className="key condensed bold">{key}:</span>
+                        <span className="value">{fields[key]}</span>
+                        <TrashIcon onClick={() => removeField(key)} />
+                      </li>))}
+                  </ul>
+                  : <p className="condensed">No additional info added...</p>
+              }
+
+              <form onSubmit={addField} ref={formRef}>
+                <input className="condensed bold" type="text" name="key" id="key" placeholder='Key' />
+                <span className="condensed bold">:</span>
+                <input type="text" name="value" id="value" placeholder='Value' />
+                <button className="fill" type='submit'>Add</button>
+              </form>
+            </div>
+          </div>
+        </legend>
+
+        <div className="button-container">
+          <button className="stroke" onClick={() => onSubmit(null)}>Back</button>
+          <button className="fill" onClick={handleSubmit}>Submit</button>
+        </div>
+      </div>
+    </>
   )
 }
 

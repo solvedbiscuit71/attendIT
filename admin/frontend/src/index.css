@@ -347,19 +347,19 @@ nav .list-container>ul li:has(.logout-icon) {
   gap: 24px;
 }
 
-.room-create legend>.field {
+.room-create legend .field {
   display: flex;
   flex-direction: column;
   align-items: start;
   gap: 6px;
 }
 
-.room-create legend>.field label {
+.room-create legend .field label {
   font-size: 20px;
   color: var(--b19);
 }
 
-.room-create legend>.field input {
+.room-create legend .field input {
   font-size: 14px;
   color: var(--b19);
   min-width: 360px;
@@ -468,4 +468,47 @@ nav .list-container>ul li:has(.logout-icon) {
 .member-list>ul li a {
   display: flex;
   flex-direction: column;
+}
+
+.member-create legend .field>input[type='file']::file-selector-button {
+  letter-spacing: -0.75px;
+
+  border-radius: 8px;
+  border: 2px solid var(--blue);
+  color: var(--blue);
+  
+  padding: 2px 8px;
+  margin-right: 10px;
+}
+
+.member-create legend .field>input[type='file']::file-selector-button:hover {
+  cursor: pointer;
+}
+
+.member-create legend .input-container {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.member-create legend .input-container>.inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.member-create legend .input-container>.image {
+  flex-grow: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.member-create legend .input-container>.image img {
+  max-height: 200px;
+  
+  border-radius: 4px;
+  box-shadow: 6px 6px 0px 0px var(--b19);
 }
