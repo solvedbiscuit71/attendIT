@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Text, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet, Platform } from "react-native";
 import { CameraView, Camera } from "expo-camera";
 
 const REGEX = /^http:\/\/(.+)\/sessions\/(.+)$/;
 
 interface Params {
-  onScanned: (type: any, data: any) => void;
+  onScanned: (type: any, data: any) => Promise<string>;
 }
 
 export default function QRcodeScanner({onScanned} : Params) {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanned, setScanned] = useState(false);
+  const [response, setResponse] = useState<string | null>(null);
 
   useEffect(() => {
     const getCameraPermissions = async () => {
@@ -21,10 +22,13 @@ export default function QRcodeScanner({onScanned} : Params) {
     getCameraPermissions();
   }, []);
 
-  const handleBarcodeScanned = ({ type, data }: any) => {
+  const handleBarcodeScanned = async ({ type, data }: any) => {
     if (REGEX.test(data)) {
-      setScanned(true);
-      onScanned(type, data);
+      const res = await onScanned(type, data);        
+      if (res == 'Success') {
+        setScanned(true);
+      }
+      setResponse(res);
     } else {
       setScanned(false);
     }
@@ -46,6 +50,10 @@ export default function QRcodeScanner({onScanned} : Params) {
         }}
         style={styles.camera}
       />
+      
+      <View>
+        <Text style={styles.responseText}>{response}</Text>       
+      </View>
     </View>
   );
 }
@@ -56,5 +64,10 @@ const styles = StyleSheet.create({
   },
   camera: {
     minHeight: 400,
+  },
+  responseText: {
+    marginTop: 20,
+    fontSize: Platform.select({ios: 18, android: 14}),
+    textAlign: 'center',
   },
 });

@@ -3,6 +3,7 @@ import numpy as np
 import face_recognition
 
 from bson import ObjectId
+from bson.errors import InvalidId
 from collections import namedtuple
 from datetime import datetime, timedelta
 from fastapi import FastAPI, HTTPException, Depends, Form, UploadFile
@@ -152,7 +153,7 @@ async def add_sessions(body: SessionData, room_id: str = Depends(verify_access))
         }
         result = await db.sessions_checkpoints.insert_one(entry_checkpoint)
 
-        return JSONResponse(content={"message": "Data created successfully"}, status_code=201)
+        return JSONResponse(content={"message": "Data created successfully", "session_id": str(session_id)}, status_code=201)
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)
     
@@ -279,7 +280,21 @@ async def get_members(verified: bool = Depends(verify_access)):
         return members
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:
         return JSONResponse(content={"message": "Database Failure"}, status_code=500)
+
+@app.get("/sessions/{session_id}/validate")
+async def check_connectivity(session_id: str):
+    try:
+        session = await db.sessions.find_one({"_id": ObjectId(session_id)}, {"_id": True})
+        if session is None:
+            return JSONResponse(content={"message": "Invalid session id"}, status_code=404)
+        return {"message": "Valid session id"}
+
+    except InvalidId:
+        return JSONResponse(content={"message": "Invalid session id"}, status_code=404)
     
+    except (ServerSelectionTimeoutError, ConnectionFailure) as e:
+        return JSONResponse(content={"message": "Database Failure"}, status_code=500)
+
 @app.post("/sessions/{session_id}/login")
 async def login_member(request: MemberLoginRequest, session_id: str):
     try:

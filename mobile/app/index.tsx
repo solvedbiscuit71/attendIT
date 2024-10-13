@@ -36,10 +36,23 @@ export default function App() {
   const [cameraOn, setCameraOn] = useState<boolean>(false);
   const [checkpointId, setCheckpointId] = useState<string | null>(null);
   
-  const onQRcodeScanned = (type: any, data: any) => {
-    save('session_url', data);
-
-    setSessionUrl(data);
+  const onQRcodeScanned = async (type: any, data: any) => {
+    try {
+      const response = await fetch(`${data}/validate`);
+      if (response.ok) {
+        save('session_url', data);
+        setSessionUrl(data);
+        return 'Success';
+      } else if (response.status == 404 || response.status == 406) {
+        const error = await response.json()
+        return 'Invalid QRCode';
+      } else {
+        const error = await response.json()
+        return 'Internal Error';
+      }
+    } catch(error) {
+      return "Ensure you're connected to the Gateway";
+    }
   }
   
   const onLoggedIn = (access_token: string, name: string) => {
@@ -92,8 +105,6 @@ export default function App() {
       const response = await fetch(sessionUrl + '/member_checkpoints', options);
       
       if (response.ok) {
-        // @ts-ignore
-        loadingCheckpoints(sessionUrl, token);
       } else if (response.status == 400) {
         const data = await response.json()
         alert(data["message"])
@@ -107,6 +118,8 @@ export default function App() {
         console.error("Error:", error)
       }
 
+      // @ts-ignore
+      loadingCheckpoints(sessionUrl, token);
       setCameraOn(false);
       setCheckpointId(null);
     } catch (error) {
