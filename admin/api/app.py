@@ -73,7 +73,7 @@ async def verify_access(token: str = Depends(oauth2_scheme)) -> bool:
 
 @app.get("/token/refresh")
 async def refresh_token(verified: bool = Depends(verify_access)):
-    print("LOG: accepted /refresh on", datetime.now().strftime(r"%Y-%m-%d %H:%M:%S"))
+    print("[LOG] accepted /refresh on", datetime.now().strftime(r"%Y-%m-%d %H:%M:%S"))
     access_token = create_access_token(data={"sub": CORRECT_USERNAME})
     return {"access_token": access_token, "token_type": "bearer"}
 
@@ -294,7 +294,6 @@ async def update_members(member_id: str, image: UploadFile | None = None, name: 
             body['additional_info'] = json.loads(additional_info)
 
         if body:
-            print(body)
             await db.members.update_one({"_id": member_id}, {"$set": body})
             return {"message": "successfully updated"}
         return {"message": "no update received"}

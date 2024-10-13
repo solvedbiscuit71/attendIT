@@ -84,7 +84,7 @@ async def verify_access(token: str = Depends(oauth2_scheme)) -> str:
 
 @app.get("/token/refresh")
 async def refresh_token(room_id: str = Depends(verify_access)):
-    print(f"LOG: accepted /refresh for {room_id} on", datetime.now().strftime(r"%Y-%m-%d %H:%M:%S"))
+    print(f"[LOG] accepted /refresh for {room_id} on", datetime.now().strftime(r"%Y-%m-%d %H:%M:%S"))
     access_token = create_access_token(data={"sub": room_id})
     return {"access_token": access_token, "token_type": "bearer"}
 
@@ -237,7 +237,6 @@ async def add_checkpoint(body: CheckpointData, session_id: str, room_id: str = D
         }
         
         result = await db.sessions_checkpoints.insert_one(checkpoint)
-        print(result)
         return {"message": f"Checkpoint created successfully"}
 
     except (ServerSelectionTimeoutError, ConnectionFailure) as e:

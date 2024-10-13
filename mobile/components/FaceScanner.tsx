@@ -41,11 +41,11 @@ export default function FaceScanner({checkpointId, onTaken}: Params) {
       <View style={styles.container}>
         <Image source={{uri: photoUri}} style={styles.camera} />
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.redButton} onPress={() => setPhotoUri(null)}>
-            <Text style={styles.buttonText}>Retake</Text>
+          <TouchableOpacity style={styles.buttonStroke} onPress={() => setPhotoUri(null)}>
+            <Text style={styles.buttonStrokeText}>Retake</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => onTaken(checkpointId, photoUri)}>
-            <Text style={styles.buttonText}>Proceed</Text>
+          <TouchableOpacity style={styles.buttonFill} onPress={() => onTaken(checkpointId, photoUri)}>
+            <Text style={styles.buttonFillText}>Proceed</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -56,11 +56,11 @@ export default function FaceScanner({checkpointId, onTaken}: Params) {
     <View style={styles.container}>
       <CameraView style={styles.camera} facing={'front'} onCameraReady={() => setCameraReady(true)} ref={camera} />
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.redButton} onPress={() => onTaken(checkpointId, null)}>
-          <Text style={styles.buttonText}>Back</Text>
+        <TouchableOpacity style={styles.buttonStroke} onPress={() => onTaken(checkpointId, null)}>
+          <Text style={styles.buttonStrokeText}>Back</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={handleTaken}>
-          <Text style={styles.buttonText}>Take</Text>
+        <TouchableOpacity style={styles.buttonFill} onPress={handleTaken}>
+          <Text style={styles.buttonFillText}>Take</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -80,21 +80,32 @@ const styles = StyleSheet.create({
     gap: 20,
     marginVertical: 20,
   },
-  redButton: {
-    backgroundColor: "#ff4242",
-    borderRadius: 4,
-    padding: 10,
+  buttonStroke: {
     flexGrow: 1,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderStyle: 'solid',
+    borderColor: '#1174FF',
+    paddingVertical: Platform.select({ios: 14, android: 10}),
+    paddingHorizontal: 24,
   },
-  button: {
-    backgroundColor: "#007BFF",
-    borderRadius: 4,
-    padding: 10,
+  buttonFill: {
     flexGrow: 1,
+    borderRadius: 8,
+    paddingVertical: Platform.select({ios: 14, android: 10}),
+    paddingHorizontal: 24,
+    backgroundColor: '#1174FF',
   },
-  buttonText: {
-    fontSize: Platform.select({ ios: 18, android: 14 }),
+  buttonStrokeText: {
+    textAlign: 'center',
+    color: '#1174FF',
+    fontSize: Platform.select({ios: 18, android: 14}),
+    fontWeight: 'bold',
+  },
+  buttonFillText: {
     textAlign: 'center',
     color: 'white',
-  }
+    fontSize: Platform.select({ios: 18, android: 14}),
+    fontWeight: 'bold',
+  },
 });

@@ -1,10 +1,11 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "AttendIT",
+    "description": "Delegating attendance to the attendees",
+    "slug": "AttendIT",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "../assets/images/favicon.jpeg",
+    "icon": "assets/images/favicon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "plugins": [
@@ -13,6 +14,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "10423375-1889-4c32-accc-fdaa94b1c423"
+      }
+    },
+    "android": {
+      "package": "com.solvedbiscuit71.AttendIT"
     }
   }
 }

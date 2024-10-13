@@ -111,6 +111,8 @@ export default function App() {
       setCheckpointId(null);
     } catch (error) {
       console.error("Network error:", error)
+      console.error("URL:", sessionUrl + '/member_checkpoints')
+      console.error("Access Token:", token)
     }
   }
 
@@ -175,17 +177,14 @@ export default function App() {
   } else {
     content = (
       <>
-        <Image style={styles.image} source={require("../assets/images/classroom.jpeg")} />
+        <Image style={styles.image} source={require("../assets/images/classroom.jpg")} />
         <View style={styles.main}>
-          <Text style={styles.h2}>Welcome, {name}!</Text>
           <View style={styles.session}>
-            <Text style={{ fontWeight: 'bold' }}>Session ID:</Text>
-            <Text>{sessionUrl.split('/').at(-1)}</Text>
+            <Text style={styles.h2}>Welcome, {name}</Text>
             {memberCheckpoints != null && !memberCheckpoints.ongoing && (
             <View style={styles.badge}>
-              <Text style={{color: 'white'}}>Ended</Text>
-            </View>
-            )}
+              <Text style={styles.badgeText}>Expired</Text>
+            </View>)}
           </View>
 
           <View style={styles.listContainer}>
@@ -195,7 +194,7 @@ export default function App() {
               let status, color;
               if (checkpoint.completed) {
                 status = "Completed";
-                color = "#72cc91";
+                color = "#4CBB17";
               } else if (now < expires_at && memberCheckpoints.ongoing) {
                 status = "Pending"
               } else {
@@ -205,14 +204,14 @@ export default function App() {
               return (
                 <View style={styles.listItem} key={checkpoint.name}>
                   <View>
-                    <Text style={{ ...styles.listText, fontWeight: 'bold' }}>{checkpoint.name}</Text>
+                    <Text style={{ ...styles.listText, fontWeight: 'bold', textDecorationLine: status == "Completed" ? 'line-through' : 'none' }}>{checkpoint.name}</Text>
                     <Text style={styles.listText}>{checkpoint.expires_at}</Text>
                   </View>
                   {
                     status != "Pending" ?
                       <Text style={{ ...styles.listText, color: color }}>{status}</Text>
-                      : (<TouchableOpacity style={styles.miniButton} onPress={() => { setCameraOn(true); setCheckpointId(checkpoint.name) }}>
-                        <Text style={styles.miniButtonText}>Pending</Text>
+                      : (<TouchableOpacity style={styles.miniButtonFill} onPress={() => { setCameraOn(true); setCheckpointId(checkpoint.name) }}>
+                        <Text style={styles.miniButtonFillText}>Pending</Text>
                       </TouchableOpacity>)
                   }
                 </View>
@@ -221,11 +220,11 @@ export default function App() {
           </View>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.redButton} onPress={onLogout}>
-              <Text style={styles.buttonText}>Logout</Text>
+            <TouchableOpacity style={styles.buttonStroke} onPress={onLogout}>
+              <Text style={styles.buttonStrokeText}>Logout</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={() => loadingCheckpoints(sessionUrl, token)}>
-              <Text style={styles.buttonText}>Refresh</Text>
+            <TouchableOpacity style={styles.buttonFill} onPress={() => loadingCheckpoints(sessionUrl, token)}>
+              <Text style={styles.buttonFillText}>Refresh</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -239,8 +238,8 @@ export default function App() {
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           <View style={styles.container}>
             <View style={styles.header}>
-              <Text style={styles.h1}>AttendIT</Text>
-              <Text style={styles.subtitle}>Delegating attendance to the attendees.</Text>
+              <Text style={styles.h1}>Attend<Text style={styles.span}>IT</Text></Text>
+              <Text style={styles.subtitle}>Delegating attendance to the attendees</Text>
             </View>
 
             <View style={styles.content}>
@@ -274,6 +273,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },
+  span: {
+    color: '#FF4C00',
+  },
   subtitle: {
     fontSize: Platform.select({ ios: 18, android: 14 }),
     textAlign: 'center',
@@ -285,28 +287,32 @@ const styles = StyleSheet.create({
   main: {
   },
   h2: {
-    fontSize: Platform.select({ ios: 24, android: 20 }),
+    fontSize: Platform.select({ ios: 20, android: 18 }),
     fontWeight: 'bold',
-    marginBottom: 20,
   },
   session: {
-    fontSize: Platform.select({ ios: 16, android: 14 }),
     flex: 1,
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
-    gap: 5
+    gap: 6,
   },
   badge: {
-    backgroundColor: "#ff4242",
+    backgroundColor: "#FF4C00",
     borderRadius: 4,
     padding: 5,
+  },
+  badgeText: {
+    fontSize: Platform.select({ ios: 16, android: 14 }),
+    fontWeight: 'bold',
     color: 'white',
   },
   listContainer: {
     marginVertical: 20,
-    borderColor: 'black',
-    borderTopWidth: 1,
-    borderStyle: 'solid',
+    
+    flex: 1,
+    flexDirection: 'column',
+    gap: 4,
   },
   listItem: {
     flex: 1,
@@ -316,6 +322,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 10,
     borderColor: 'black',
+    borderTopWidth: 1,
     borderBottomWidth: 1,
     borderStyle: 'solid',
   },
@@ -328,30 +335,43 @@ const styles = StyleSheet.create({
     gap: 20,
     marginBottom: 20,
   },
-  redButton: {
-    backgroundColor: "#ff4242",
-    borderRadius: 4,
-    padding: 10,
+  buttonStroke: {
     flexGrow: 1,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderStyle: 'solid',
+    borderColor: '#1174FF',
+    paddingVertical: Platform.select({ios: 14, android: 10}),
+    paddingHorizontal: 24,
   },
-  button: {
-    backgroundColor: "#007BFF",
-    borderRadius: 4,
-    padding: 10,
+  buttonFill: {
     flexGrow: 1,
+    borderRadius: 8,
+    paddingVertical: Platform.select({ios: 14, android: 10}),
+    paddingHorizontal: 24,
+    backgroundColor: '#1174FF',
   },
-  miniButton: {
-    backgroundColor: "#007BFF",
-    borderRadius: 4,
-    padding: 10,
+  miniButtonFill: {
+    borderRadius: 8,
+    paddingVertical: Platform.select({ios: 10, android: 8}),
+    paddingHorizontal: 12,
+    backgroundColor: '#1174FF',
   },
-  miniButtonText: {
-    color: 'white',
-    fontSize: Platform.select({ ios: 14, android: 12 })
+  buttonStrokeText: {
+    textAlign: 'center',
+    color: '#1174FF',
+    fontSize: Platform.select({ios: 18, android: 14}),
+    fontWeight: 'bold',
   },
-  buttonText: {
-    fontSize: Platform.select({ ios: 18, android: 14 }),
+  buttonFillText: {
     textAlign: 'center',
     color: 'white',
-  }
+    fontSize: Platform.select({ios: 18, android: 14}),
+    fontWeight: 'bold',
+  },
+  miniButtonFillText: {
+    textAlign: 'center',
+    color: 'white',
+    fontSize: Platform.select({ios: 18, android: 14}),
+  },
 })
