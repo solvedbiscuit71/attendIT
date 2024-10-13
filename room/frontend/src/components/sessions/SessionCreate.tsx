@@ -5,7 +5,7 @@ import { TrashIcon } from "../../assets/Icons";
 
 function SessionCreate({onSubmit, membersData}: {onSubmit: (data: any) => void, membersData: MemberType[]}) {
   const [fields, setFields] = useState<any>({});
-  const [members, setMembers] = useState<MemberType[]>(membersData);
+  const [members, setMembers] = useState<MemberType[]>(membersData.filter(member => member.ongoing_session_id === null));
   const formRef = useRef<HTMLFormElement>(null);
   const selectRef = useRef<HTMLSelectElement>(null);
   
@@ -32,7 +32,6 @@ function SessionCreate({onSubmit, membersData}: {onSubmit: (data: any) => void, 
   }
     
   const removeField = (toRemove: string) => {
-    console.log(toRemove)
     setFields((fields: any) => Object.keys(fields).filter(key => key !== toRemove)
       .reduce((obj, key) => {
           //@ts-ignore
@@ -62,7 +61,6 @@ function SessionCreate({onSubmit, membersData}: {onSubmit: (data: any) => void, 
       return member;
     }))
   }
-
   return (
     <div className="room-create">
       <legend>
@@ -71,18 +69,20 @@ function SessionCreate({onSubmit, membersData}: {onSubmit: (data: any) => void, 
           {
             members.length > 0 ?
               <ul>
-                {members.sort((a, b) => {
+                {members
+                  .sort((a, b) => {
                       if (a._id < b._id) return -1;
                       else if (a._id > b._id) return 1;
                       else return 0;
-                    }).map(member =>
-                  <li key={member._id}>
-                    <input id={`checkbox-${member._id}`} type="checkbox" onClick={() => handleCheck(member._id)} disabled={member.ongoing_session_id !== null} />
-                    <label className="condensed" htmlFor={`checkbox-${member._id}`}>
-                      <span className="bold">{member._id}</span>
-                      <span>{member.name}</span>
-                    </label>
-                  </li>)}
+                    })
+                  .map(member =>
+                    <li key={member._id}>
+                      <input id={`checkbox-${member._id}`} type="checkbox" onClick={() => handleCheck(member._id)} />
+                      <label className="condensed" htmlFor={`checkbox-${member._id}`}>
+                        <span className="bold">{member._id}</span>
+                        <span>{member.name}</span>
+                      </label>
+                    </li>)}
               </ul>
               : <p>No members avialable...</p>
           }

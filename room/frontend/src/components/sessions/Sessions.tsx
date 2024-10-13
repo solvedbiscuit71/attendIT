@@ -54,7 +54,7 @@ function Sessions({reLogin}: {reLogin: () => void}) {
   const [memberData, setMemberData] = useState<MemberType[] | null>(null);
   const [viewData, setViewData] = useState(null);
   
-  const refreshSessions = () => {
+  const refreshSessions = (startup: boolean = false) => {
     const fetchSessions = async () => {
       const response = await fetch(fetchUrl, {
           headers: {
@@ -65,7 +65,8 @@ function Sessions({reLogin}: {reLogin: () => void}) {
       if (response.ok) {
         const data = await response.json()
         setSessionData(data);
-        changeApp('/list');
+        if (startup)
+          changeApp('/list');
       } else if (response.status == 401) {
         reLogin();
       } else {
@@ -77,7 +78,7 @@ function Sessions({reLogin}: {reLogin: () => void}) {
     fetchSessions();
   };
   
-  useEffect(refreshSessions, []);
+  useEffect(() => refreshSessions(true), []);
   
   const handleSubmit = async (data: any) => {
     if (data == null) {
@@ -95,8 +96,9 @@ function Sessions({reLogin}: {reLogin: () => void}) {
     });
     
     if (response.ok) {
+      const result = await response.json();
       refreshSessions();
-      changeApp('/list');
+      handleViewRequest(result['session_id'])
     } else if (response.status == 401) {
       reLogin();
     } else if (response.status == 409) {

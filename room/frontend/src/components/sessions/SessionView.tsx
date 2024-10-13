@@ -13,7 +13,6 @@ interface Props {
 
 function SessionView({ data, onBack, onSecondary, onCheckpoint, onRefresh }: Props) {
   const formRef = useRef<HTMLFormElement>(null);
-  console.log(data)
 
   const handleCheckpoint = (event: React.FormEvent) => {
     event.preventDefault();

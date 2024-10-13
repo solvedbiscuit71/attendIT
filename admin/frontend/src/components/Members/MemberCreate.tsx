@@ -33,7 +33,6 @@ function MemberCreate({onSubmit}: {onSubmit: (data: any) => void}) {
   }
 
   const removeField = (toRemove: string) => {
-    console.log(toRemove)
     setFields((fields: any) => Object.keys(fields).filter(key => key !== toRemove)
       .reduce((obj, key) => {
           //@ts-ignore
