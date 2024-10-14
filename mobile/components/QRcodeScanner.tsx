@@ -12,6 +12,7 @@ export default function QRcodeScanner({onScanned} : Params) {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanned, setScanned] = useState(false);
   const [response, setResponse] = useState<string | null>(null);
+  const [refreshId, setRefreshId] = useState<any>(null);
 
   useEffect(() => {
     const getCameraPermissions = async () => {
@@ -27,11 +28,21 @@ export default function QRcodeScanner({onScanned} : Params) {
       const res = await onScanned(type, data);        
       if (res == 'Success') {
         setScanned(true);
+        return;
       }
       setResponse(res);
     } else {
-      setScanned(false);
+      setResponse('Invalid QRCode')
     }
+
+    // clear alert message after 2 seconds
+    if (refreshId !== null) {
+      clearTimeout(refreshId);
+    }
+    setRefreshId(setTimeout(() => {
+      setResponse(null);
+      setRefreshId(null);
+    }, 2000));
   };
 
   if (hasPermission === null) {
