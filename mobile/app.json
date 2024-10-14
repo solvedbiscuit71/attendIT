@@ -3,7 +3,7 @@
     "name": "AttendIT",
     "description": "Delegating attendance to the attendees",
     "slug": "AttendIT",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "assets/images/favicon.png",
     "scheme": "myapp",
