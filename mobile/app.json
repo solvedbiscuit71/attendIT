@@ -3,14 +3,19 @@
     "name": "AttendIT",
     "description": "Delegating attendance to the attendees",
     "slug": "AttendIT",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "assets/images/favicon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "plugins": [
       "expo-router",
-      "expo-secure-store"
+      "expo-secure-store",
+      ["expo-build-properties", {
+        "android": {
+          "usesCleartextTraffic": true
+        }
+      }]
     ],
     "experiments": {
       "typedRoutes": true
