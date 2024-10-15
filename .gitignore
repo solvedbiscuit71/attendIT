@@ -4,6 +4,10 @@
 **/.DS_Store
 **/.env
 
+# Ignore log files
+**/*_pid.txt
+**/*.log
+
 # Ignore temporary images
 **/tmp.jpeg
 **/tmp.png
