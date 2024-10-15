@@ -6,6 +6,7 @@ if [ -f frontend_pid.txt ]; then
     echo "[LOG] Stop frontend server, PID: $FRONTEND_PID"
     kill -9 $FRONTEND_PID
     rm frontend_pid.txt
+    rm frontend/.env.production.local
 else
     echo "[ERROR] Frontend server is not running or PID file is missing."
 fi

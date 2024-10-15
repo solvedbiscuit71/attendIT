@@ -7,7 +7,9 @@ interface Props {
     onLogin: (name: string, token: string) => void;
 }
 
-const url = 'http://127.0.0.1:8001/login'
+console.log(import.meta.env)
+const VITE_API_DOMAINName = import.meta.env.VITE_API_DOMAIN
+const url = `http://${VITE_API_DOMAINName}/login`
 
 function Login({onLogin: LoggedIn}: Props) {
   const formRef = useRef<HTMLFormElement>(null);

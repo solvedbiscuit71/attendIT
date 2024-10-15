@@ -9,7 +9,8 @@ import Title from "./components/Title";
 import Credit from "./components/Credit";
 import Hero from "./components/Hero";
 
-const refreshUrl = 'http://127.0.0.1:8001/token/refresh';
+const VITE_API_DOMAINName = import.meta.env.VITE_API_DOMAIN || '127.0.0.1:8001'
+const refreshUrl = `http://${VITE_API_DOMAINName}/token/refresh`;
 
 function useInterval(callback: any, delay: number) {
   const savedCallback = useRef<any>();

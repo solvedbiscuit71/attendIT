@@ -40,9 +40,10 @@ interface MemberType {
   selected: boolean;
 };
 
-const fetchUrl = 'http://127.0.0.1:8001/sessions';
-const memberUrl = 'http://127.0.0.1:8001/members';
-const addUrl = 'http://127.0.0.1:8001/sessions';
+const VITE_API_DOMAINName = import.meta.env.VITE_API_DOMAIN || '127.0.0.1:8001'
+const fetchUrl = `http://${VITE_API_DOMAINName}/sessions`;
+const memberUrl = `http://${VITE_API_DOMAINName}/members`;
+const addUrl = `http://${VITE_API_DOMAINName}/sessions`;
 
 function Sessions({reLogin}: {reLogin: () => void}) {
   // app state
